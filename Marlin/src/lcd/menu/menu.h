@@ -309,7 +309,7 @@ void nozzle_or_bed_heating_tark();
 #define STICKY_SCREEN(S) []{ ui.defer_status_screen(); ui.goto_screen(S); }
 
 #if HAS_LEVELING && ANY(LCD_BED_TRAMMING, PROBE_OFFSET_WIZARD, X_AXIS_TWIST_COMPENSATION)
-  extern bool leveling_was_active;
+  extern bool menu_leveling_was_active;
 #endif
 
 #if ANY(PROBE_MANUALLY, MESH_BED_LEVELING, X_AXIS_TWIST_COMPENSATION)
