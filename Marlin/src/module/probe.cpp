@@ -199,35 +199,35 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
   inline void run_deploy_moves() {
     #ifdef Z_PROBE_ALLEN_KEY_DEPLOY_1
       #ifndef Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t deploy_1 = Z_PROBE_ALLEN_KEY_DEPLOY_1;
       do_blocking_move_to(deploy_1, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_DEPLOY_2
       #ifndef Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t deploy_2 = Z_PROBE_ALLEN_KEY_DEPLOY_2;
       do_blocking_move_to(deploy_2, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_DEPLOY_3
       #ifndef Z_PROBE_ALLEN_KEY_DEPLOY_3_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_DEPLOY_3_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_DEPLOY_3_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t deploy_3 = Z_PROBE_ALLEN_KEY_DEPLOY_3;
       do_blocking_move_to(deploy_3, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_DEPLOY_3_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_DEPLOY_4
       #ifndef Z_PROBE_ALLEN_KEY_DEPLOY_4_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_DEPLOY_4_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_DEPLOY_4_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t deploy_4 = Z_PROBE_ALLEN_KEY_DEPLOY_4;
       do_blocking_move_to(deploy_4, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_DEPLOY_4_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_DEPLOY_5
       #ifndef Z_PROBE_ALLEN_KEY_DEPLOY_5_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_DEPLOY_5_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_DEPLOY_5_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t deploy_5 = Z_PROBE_ALLEN_KEY_DEPLOY_5;
       do_blocking_move_to(deploy_5, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_DEPLOY_5_FEEDRATE));
@@ -237,35 +237,35 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
   inline void run_stow_moves() {
     #ifdef Z_PROBE_ALLEN_KEY_STOW_1
       #ifndef Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t stow_1 = Z_PROBE_ALLEN_KEY_STOW_1;
       do_blocking_move_to(stow_1, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_STOW_2
       #ifndef Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t stow_2 = Z_PROBE_ALLEN_KEY_STOW_2;
       do_blocking_move_to(stow_2, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_STOW_3
       #ifndef Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t stow_3 = Z_PROBE_ALLEN_KEY_STOW_3;
       do_blocking_move_to(stow_3, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_STOW_4
       #ifndef Z_PROBE_ALLEN_KEY_STOW_4_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_STOW_4_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_STOW_4_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t stow_4 = Z_PROBE_ALLEN_KEY_STOW_4;
       do_blocking_move_to(stow_4, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_STOW_4_FEEDRATE));
     #endif
     #ifdef Z_PROBE_ALLEN_KEY_STOW_5
       #ifndef Z_PROBE_ALLEN_KEY_STOW_5_FEEDRATE
-        #define Z_PROBE_ALLEN_KEY_STOW_5_FEEDRATE 0.0
+        #define Z_PROBE_ALLEN_KEY_STOW_5_FEEDRATE 0.0f
       #endif
       constexpr xyz_pos_t stow_5 = Z_PROBE_ALLEN_KEY_STOW_5;
       do_blocking_move_to(stow_5, MMM_TO_MMS(Z_PROBE_ALLEN_KEY_STOW_5_FEEDRATE));
@@ -358,7 +358,8 @@ xyz_pos_t Probe::offset; // Initialized by settings.load()
 void Probe::do_z_raise(const float z_raise) {
   if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Probe::do_z_raise(", z_raise, ")");
   float z_dest = z_raise;
-  if (offset.z < 0) z_dest -= offset.z;
+  const float zoffs = DIFF_TERN(HAS_HOTEND_OFFSET, offset.z, hotend_offset[active_extruder].z);
+  if (zoffs < 0) z_dest -= zoffs;
   do_z_clearance(z_dest);
 }
 
@@ -717,13 +718,15 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
 float Probe::run_z_probe(const bool sanity_check/*=true*/) {
   DEBUG_SECTION(log_probe, "Probe::run_z_probe", DEBUGGING(LEVELING));
 
+  const float zoffs = SUM_TERN(HAS_HOTEND_OFFSET, -offset.z, hotend_offset[active_extruder].z);
+
   auto try_to_probe = [&](PGM_P const plbl, const_float_t z_probe_low_point, const feedRate_t fr_mm_s, const bool scheck, const float clearance) -> bool {
     // Tare the probe, if supported
     if (TERN0(PROBE_TARE, tare())) return true;
 
     // Do a first probe at the fast speed
-    const bool probe_fail = probe_down_to_z(z_probe_low_point, fr_mm_s),            // No probe trigger?
-               early_fail = (scheck && current_position.z > -offset.z + clearance); // Probe triggered too high?
+    const bool probe_fail = probe_down_to_z(z_probe_low_point, fr_mm_s),          // No probe trigger?
+               early_fail = (scheck && current_position.z > zoffs + clearance);   // Probe triggered too high?
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING) && (probe_fail || early_fail)) {
         DEBUG_ECHOPGM_P(plbl);
@@ -740,7 +743,7 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
   // Stop the probe before it goes too low to prevent damage.
   // If Z isn't known then probe to -10mm.
-  const float z_probe_low_point = axis_is_trusted(Z_AXIS) ? -offset.z + Z_PROBE_LOW_POINT : -10.0;
+  const float z_probe_low_point = axis_is_trusted(Z_AXIS) ? zoffs + Z_PROBE_LOW_POINT : -10.0f;
 
   // Double-probing does a fast probe followed by a slow probe
   #if TOTAL_PROBING == 2
@@ -770,7 +773,7 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
     // If the nozzle is well over the travel height then
     // move down quickly before doing the slow probe
-    const float z = Z_CLEARANCE_DEPLOY_PROBE + 5.0 + (offset.z < 0 ? -offset.z : 0);
+    const float z = Z_CLEARANCE_DEPLOY_PROBE + 5.0f + (zoffs > 0 ? zoffs : 0);
     if (current_position.z > z) {
       // Probe down fast. If the probe never triggered, raise for probe clearance
       if (!probe_down_to_z(z, z_probe_fast_mm_s))
@@ -869,29 +872,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 	  if(extra_point) {
 	  	do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
 
-		  if (TERN0(PROBE_TARE, tare())) return NAN;
-      #if ENABLED(PROBING_PART_COOLING_FAN)
-    	  thermalManager.set_fan_speed(0, 0);
-      #endif
-    	// Do a first probe at the fast speed
-    	if (try_to_probe(PSTR("EXTRA"), z_probe_low_point, z_probe_fast_mm_s,
-            sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
+    // Return a weighted average of the fast and slow probes
+    const float measured_z = (z2 * 3.0f + first_probe_z * 2.0f) * 0.2f;
 
-			const float z3 = current_position.z;
-
-		  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("extra nd Probe Z:", z3, " Discrepancy:", first_probe_z - z3);
-	  		#if ENABLED(LEVEING_CALIBRATION_MODULE)
-          #if ENABLED(PROBING_PART_COOLING_FAN)
-      			  thermalManager.set_fan_speed(0, 255);
-          #endif
-		 		    autoProbe.run_z_mm(RUN_DOWN_MM,2);
-	  		#endif
-			  const float extera_measured_z = (z3 * 3.0 + first_probe_z * 2.0) * 0.2;
-        return extera_measured_z;
-	  	}
-	
-    	// Return a weighted average of the fast and slow probes
-     	const float measured_z = (z2 * 3.0 + first_probe_z * 2.0) * 0.2;
 
   #else
 
@@ -900,10 +883,33 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
   #endif
 
-  return measured_z;
+  return DIFF_TERN(HAS_HOTEND_OFFSET, measured_z, hotend_offset[active_extruder].z);
 }
 
+#if DO_TOOLCHANGE_FOR_PROBING
+
+  #include "tool_change.h"
+
+  /**
+   * Switches to the appropriate tool (PROBING_TOOL) for probing (probing = true), and switches
+   * back to the old tool when probing = false. Uses statics to avoid unnecessary checks and to
+   * cache the previous tool, so always call with false after calling with true.
+   */
+  void Probe::use_probing_tool(const bool probing/*=true*/) {
+    static uint8_t old_tool;
+    static bool old_state = false;
+    if (probing == old_state) return;
+    old_state = probing;
+    if (probing) old_tool = active_extruder;
+    const uint8_t tool = probing ? PROBING_TOOL : old_tool;
+    if (tool != active_extruder)
+      tool_change(tool, ENABLED(PROBE_TOOLCHANGE_NO_MOVE));
+  }
+
+#endif
+
 /**
+ * - Switch to PROBING_TOOL if necessary
  * - Move to the given XY
  * - Deploy the probe, if not already deployed
  * - Probe the bed, get the Z position
@@ -911,6 +917,12 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
  *   - Stow the probe, or
  *   - Raise to the BETWEEN height
  * - Return the probed Z position
+ * - Revert to previous tool
+ *
+ * A batch of multiple probing operations should always be preceded by use_probing_tool() invocation
+ * and succeeded by use_probing_tool(false), in order to avoid multiple tool changes and to end up
+ * with the previously active tool.
+ *
  */
 float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRaise raise_after/*=PROBE_PT_NONE*/, const uint8_t verbose_level/*=0*/, const bool probe_relative/*=true*/, const bool sanity_check/*=true*/) {
   DEBUG_SECTION(log_probe, "Probe::probe_at_point", DEBUGGING(LEVELING));
@@ -944,7 +956,8 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
     }
   }
 
-  if (probe_relative) npos -= offset_xy;  // Get the nozzle position
+  if (probe_relative) // Get the nozzle position, adjust for active hotend if not 0
+    npos -= DIFF_TERN(HAS_HOTEND_OFFSET, offset_xy, xy_pos_t(hotend_offset[active_extruder]));
 
   #if ENABLED(PROBING_PART_COOLING_FAN)
     thermalManager.set_fan_speed(0, 255);
@@ -989,6 +1002,7 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
     #endif
   }
   DEBUG_ECHOLNPGM("measured_z: ", measured_z);
+
   return measured_z;
 }
 

@@ -98,10 +98,6 @@ public:
   bool      dryrun,
             reenable;
 
-  #if HAS_MULTI_HOTEND
-    uint8_t tool_index;
-  #endif
-
   #if EITHER(PROBE_MANUALLY, AUTO_BED_LEVELING_LINEAR)
     int abl_probe_index;
   #endif
@@ -283,10 +279,7 @@ G29_TYPE GcodeSuite::G29() {
    */
   if (!g29_in_progress) {
 
-    #if HAS_MULTI_HOTEND
-      abl.tool_index = active_extruder;
-      if (active_extruder != 0) tool_change(0, true);
-    #endif
+    probe.use_probing_tool();
 
     #if EITHER(PROBE_MANUALLY, AUTO_BED_LEVELING_LINEAR)
       abl.abl_probe_index = -1;
@@ -977,7 +970,7 @@ G29_TYPE GcodeSuite::G29() {
 
   #endif
 
-  TERN_(HAS_MULTI_HOTEND, if (abl.tool_index != 0) tool_change(abl.tool_index));
+  probe.use_probing_tool(false);
 
   report_current_position();
 
