@@ -754,15 +754,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     if (try_to_probe(PSTR("FAST"), z_probe_low_point, z_probe_fast_mm_s,
                      sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
 
-    const float first_probe_z = DIFF_TERN(HAS_DELTA_SENSORLESS_PROBING, current_position.z, largest_sensorless_adj);
-    
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("1st Probe Z:", first_probe_z);
-	  #if ENABLED(LEVEING_CALIBRATION_MODULE)
-      #if ENABLED(PROBING_PART_COOLING_FAN)
-        thermalManager.set_fan_speed(0, 255);
-      #endif
-		  autoProbe.run_z_mm(RUN_DOWN_MM,1);
-	  #endif
+    const float z1 = DIFF_TERN(HAS_DELTA_SENSORLESS_PROBING, current_position.z, largest_sensorless_adj);
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("1st Probe Z:", z1);
+
     // Raise to give the probe clearance
     do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
 
@@ -770,7 +764,7 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
     // If the nozzle is well over the travel height then
     // move down quickly before doing the slow probe
-    const float z = Z_CLEARANCE_DEPLOY_PROBE + 5.0 + (offset.z < 0 ? -offset.z : 0);
+    const float z = (Z_CLEARANCE_DEPLOY_PROBE) + 5.0f + _MAX(zoffs, 0.0f);
     if (current_position.z > z) {
       // Probe down fast. If the probe never triggered, raise for probe clearance
       if (!probe_down_to_z(z, z_probe_fast_mm_s))
@@ -857,41 +851,10 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
     const float z2 = DIFF_TERN(HAS_DELTA_SENSORLESS_PROBING, current_position.z, largest_sensorless_adj);
 
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("2nd Probe Z:", z2, " Discrepancy:", first_probe_z - z2);
-	  #if ENABLED(LEVEING_CALIBRATION_MODULE)
-      #if ENABLED(PROBING_PART_COOLING_FAN)
-        thermalManager.set_fan_speed(0, 255);
-      #endif
-		 autoProbe.run_z_mm(RUN_DOWN_MM,2);
-	  #endif
-	    #define DIFF 0.1
-    bool extra_point = !!(ABS(z2 - first_probe_z) >= DIFF);
-	  if(extra_point) {
-	  	do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
+    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("2nd Probe Z:", z2, " Discrepancy:", z1 - z2);
 
-		  if (TERN0(PROBE_TARE, tare())) return NAN;
-      #if ENABLED(PROBING_PART_COOLING_FAN)
-    	  thermalManager.set_fan_speed(0, 0);
-      #endif
-    	// Do a first probe at the fast speed
-    	if (try_to_probe(PSTR("EXTRA"), z_probe_low_point, z_probe_fast_mm_s,
-            sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
-
-			const float z3 = current_position.z;
-
-		  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("extra nd Probe Z:", z3, " Discrepancy:", first_probe_z - z3);
-	  		#if ENABLED(LEVEING_CALIBRATION_MODULE)
-          #if ENABLED(PROBING_PART_COOLING_FAN)
-      			  thermalManager.set_fan_speed(0, 255);
-          #endif
-		 		    autoProbe.run_z_mm(RUN_DOWN_MM,2);
-	  		#endif
-			  const float extera_measured_z = (z3 * 3.0 + first_probe_z * 2.0) * 0.2;
-        return extera_measured_z;
-	  	}
-	
-    	// Return a weighted average of the fast and slow probes
-     	const float measured_z = (z2 * 3.0 + first_probe_z * 2.0) * 0.2;
+    // Return a weighted average of the fast and slow probes
+    const float measured_z = (z2 * 3.0f + z1 * 2.0f) * 0.2f;
 
   #else
 
