@@ -823,7 +823,7 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
           #if EXTRA_PROBING > 0
             < TOTAL_PROBING - 1
           #endif
-        ) do_blocking_move_to_z(z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
+        ) do_z_clearance(z + (Z_CLEARANCE_MULTI_PROBE), false);
       #endif
     }
 
