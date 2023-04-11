@@ -922,39 +922,45 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
   #endif
 
   #if ENABLED(BD_SENSOR)
+
     return current_position.z - bdl.read(); // Difference between Z-home-relative Z and sensor reading
-  #endif
 
-  float measured_z = NAN;
-  if (!deploy()) {
-    measured_z = run_z_probe(sanity_check) + offset.z;
-    TERN_(HAS_PTC, ptc.apply_compensation(measured_z));
-    TERN_(X_AXIS_TWIST_COMPENSATION, measured_z += xatc.compensation(npos + offset_xy));
-  }
-  if (!isnan(measured_z)) {
-    #if ENABLED(PROBING_PART_COOLING_FAN)
-      thermalManager.set_fan_speed(0, 255);
-    #endif
-    const bool big_raise = raise_after == PROBE_PT_BIG_RAISE;
-    if (big_raise || raise_after == PROBE_PT_RAISE)
-      do_blocking_move_to_z(current_position.z + (big_raise ? 25 : Z_CLEARANCE_BETWEEN_PROBES), z_probe_fast_mm_s);
-    else if (raise_after == PROBE_PT_STOW || raise_after == PROBE_PT_LAST_STOW)
-      if (stow()) measured_z = NAN;   // Error on stow?
+  #else // !BD_SENSOR
 
-    if (verbose_level > 2)
-      SERIAL_ECHOLNPGM("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
-  }
+    float measured_z = deploy() ? NAN : run_z_probe(sanity_check) + offset.z;
 
-  if (isnan(measured_z)) {
-  	status = -1;
-    stow();
-    LCD_MESSAGE(MSG_LCD_PROBING_FAILED);
-    #if DISABLED(G29_RETRY_AND_RECOVER)
-      SERIAL_ERROR_MSG(STR_ERR_PROBING_FAILED);
-    #endif
-  }
-  DEBUG_ECHOLNPGM("measured_z: ", measured_z);
-  return measured_z;
+    // Deploy succeeded and a successful measurement was done.
+    // Raise and/or stow the probe depending on 'raise_after' and settings.
+    if (!isnan(measured_z)) {
+      switch (raise_after) {
+        default: break;
+        case PROBE_PT_RAISE:
+          do_z_clearance(Z_PROBE_SAFE_CLEARANCE);
+          break;
+        case PROBE_PT_STOW: case PROBE_PT_LAST_STOW:
+          if (stow()) measured_z = NAN;   // Error on stow?
+          break;
+      }
+    }
+
+    // If any error occurred stow the probe and set an alert
+    if (isnan(measured_z)) {
+      stow();
+      LCD_MESSAGE(MSG_LCD_PROBING_FAILED);
+      #if DISABLED(G29_RETRY_AND_RECOVER)
+        SERIAL_ERROR_MSG(STR_ERR_PROBING_FAILED);
+      #endif
+    }
+    else {
+      TERN_(HAS_PTC, ptc.apply_compensation(measured_z));
+      TERN_(X_AXIS_TWIST_COMPENSATION, measured_z += xatc.compensation(npos + offset_xy));
+      if (verbose_level > 2 || DEBUGGING(LEVELING))
+        SERIAL_ECHOLNPGM("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
+    }
+
+    return measured_z;
+
+  #endif // !BD_SENSOR
 }
 
 #if HAS_Z_SERVO_PROBE
