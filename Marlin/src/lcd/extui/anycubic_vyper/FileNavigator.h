@@ -22,38 +22,35 @@
 #pragma once
 
 /**
- * lcd/extui/anycubic_vyper/dgus_defs.h
+ * lcd/extui/anycubic_vyper/FileNavigator.h
  */
 
-#include "../anycubic/common_defs.h"
+#include "dgus_tft_defs.h"
+#include "../ui_api.h"
 
-// TFT panel commands
-#define AC_msg_bed_temp_abnormal        F("J28")
-
-// TFT panel messages
-#define MARLIN_msg_probing_point        PSTR("Probing Point ")
-#define MARLIN_msg_probe_preheat_start  PSTR("Probe preheat start")
-#define MARLIN_msg_probe_preheat_stop   PSTR("Probe preheat stop")
-#define MARLIN_msg_media_removed        PSTR("Media Removed")
+using namespace ExtUI;
 
 namespace Anycubic {
 
-  enum paused_state_t : uint8_t {
-    AC_paused_heater_timed_out,
-    AC_paused_filament_lack,
-    AC_paused_purging_filament,
-    AC_paused_idle
+  class FileNavigator {
+    public:
+      static FileList filelist;
+
+      FileNavigator();
+      static void reset();
+      static void getFiles(uint16_t);
+      static void upDIR();
+      static void changeDIR(char *);
+      static void sendFile();
+      static void refresh();
+      static char* getCurrentFolderName();
+      static uint16_t getFileNum();
+    private:
+      static uint16_t lastindex;
+      static uint16_t currentindex;
+      static uint8_t  folderdepth;
+      static char     currentfoldername[MAX_PATH_LEN + 1];
   };
 
-  enum printer_state_t : uint8_t {
-    AC_printer_idle,
-    AC_printer_probing,
-    AC_printer_printing,
-    AC_printer_pausing,
-    AC_printer_paused,
-    AC_printer_stopping,
-    AC_printer_stopping_from_media_remove,
-    AC_printer_resuming_from_power_outage
-  };
-
-} // Anycubic
+  extern FileNavigator filenavigator;
+}

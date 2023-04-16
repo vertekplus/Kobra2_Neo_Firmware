@@ -19,41 +19,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
 /**
- * lcd/extui/anycubic_vyper/dgus_defs.h
+ * lcd/extui/anycubic/Tunes.cpp
  */
 
-#include "../anycubic/common_defs.h"
+/***********************************************************************
+ * A Utility to play tunes using the buzzer in the printer controller. *
+ * See Tunes.h for note and tune definitions.                          *
+ ***********************************************************************/
 
-// TFT panel commands
-#define AC_msg_bed_temp_abnormal        F("J28")
+#include "../../../inc/MarlinConfigPre.h"
 
-// TFT panel messages
-#define MARLIN_msg_probing_point        PSTR("Probing Point ")
-#define MARLIN_msg_probe_preheat_start  PSTR("Probe preheat start")
-#define MARLIN_msg_probe_preheat_stop   PSTR("Probe preheat stop")
-#define MARLIN_msg_media_removed        PSTR("Media Removed")
+#if EITHER(ANYCUBIC_LCD_CHIRON, ANYCUBIC_LCD_VYPER)
+
+#include "Tunes.h"
+#include "../../../libs/buzzer.h"
+#include "../ui_api.h"
 
 namespace Anycubic {
 
-  enum paused_state_t : uint8_t {
-    AC_paused_heater_timed_out,
-    AC_paused_filament_lack,
-    AC_paused_purging_filament,
-    AC_paused_idle
-  };
+  void PlayTune(const uint16_t *tune, const uint8_t speed=1) {
+    const uint16_t wholenotelen = tune[0] / speed;
+    for (uint8_t pos = 1; pos < MAX_TUNE_LENGTH; pos += 2) {
+      const uint16_t freq = tune[pos];
+      if (freq == n_END) break;
+      BUZZ(freq, wholenotelen / tune[pos + 1]);
+    }
+  }
 
-  enum printer_state_t : uint8_t {
-    AC_printer_idle,
-    AC_printer_probing,
-    AC_printer_printing,
-    AC_printer_pausing,
-    AC_printer_paused,
-    AC_printer_stopping,
-    AC_printer_stopping_from_media_remove,
-    AC_printer_resuming_from_power_outage
-  };
+}
 
-} // Anycubic
+#endif // ANYCUBIC_LCD_CHIRON || ANYCUBIC_LCD_VYPER
