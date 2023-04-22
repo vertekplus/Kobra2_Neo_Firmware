@@ -556,6 +556,11 @@ public:
 
   #endif
 
+  #if !HAS_WIRED_LCD
+    static void quick_feedback(const bool=true) {}
+    static void completion_feedback(const bool=true) {}
+  #endif
+
   #if ENABLED(SDSUPPORT)
     #if BOTH(SCROLL_LONG_FILENAMES, HAS_MARLINUI_MENU)
       #define MARLINUI_SCROLL_NAME 1
