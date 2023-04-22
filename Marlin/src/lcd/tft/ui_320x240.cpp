@@ -287,8 +287,46 @@ void draw_fan_status(uint16_t x, uint16_t y, const bool blink) {
 
 void draw_speed_status(uint16_t x, uint16_t y, const bool blink) {
 
-  MarlinImage image = imgIncrease;
-  tft.canvas(x, y, 135, 100);
+  TERN_(TOUCH_SCREEN, touch.clear());
+
+  // heaters and fan
+  uint16_t i, x, y = TFT_STATUS_TOP_Y;
+
+  for (i = 0 ; i < ITEMS_COUNT; i++) {
+    x = (TFT_WIDTH / ITEMS_COUNT - 64) / 2  + (TFT_WIDTH * i / ITEMS_COUNT);
+    switch (i) {
+      #if HAS_EXTRUDERS
+        case ITEM_E0: draw_heater_status(x, y, H_E0); break;
+      #endif
+      #if HAS_MULTI_HOTEND
+        case ITEM_E1: draw_heater_status(x, y, H_E1); break;
+      #endif
+      #if HOTENDS > 2
+        case ITEM_E2: draw_heater_status(x, y, H_E2); break;
+      #endif
+      #if HAS_HEATED_BED
+        case ITEM_BED: draw_heater_status(x, y, H_BED); break;
+      #endif
+      #if HAS_TEMP_CHAMBER
+        case ITEM_CHAMBER: draw_heater_status(x, y, H_CHAMBER); break;
+      #endif
+      #if HAS_TEMP_COOLER
+        case ITEM_COOLER: draw_heater_status(x, y, H_COOLER); break;
+      #endif
+      #if HAS_FAN
+        case ITEM_FAN: draw_fan_status(x, y, blink); break;
+      #endif
+    }
+  }
+
+  // coordinates
+  tft.canvas(4, 103,
+    #if ENABLED(TFT_COLOR_UI_PORTRAIT)
+      232, FONT_LINE_HEIGHT * 2
+    #else
+      312, FONT_LINE_HEIGHT
+    #endif
+  );
   tft.set_background(COLOR_BACKGROUND);
   
   tft.add_image(0, 18, image, COLOR_COLD);
