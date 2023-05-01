@@ -25,6 +25,10 @@
  * Test TEENSY35_36 specific configuration values for errors at compile-time.
  */
 
+#if HAS_SPI_TFT || HAS_FSMC_TFT
+  #error "Sorry! TFT displays are not available for Teensy 3.5/3.6."
+#endif
+
 #if ENABLED(EMERGENCY_PARSER)
   #error "EMERGENCY_PARSER is not yet implemented for Teensy 3.5/3.6. Disable EMERGENCY_PARSER to continue."
 #endif
