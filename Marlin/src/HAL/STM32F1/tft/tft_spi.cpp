@@ -89,25 +89,24 @@ uint32_t TFT_SPI::GetID() {
 }
 
 uint32_t TFT_SPI::ReadID(uint16_t Reg) {
-  // #if !PIN_EXISTS(TFT_MISO)
-  //   return 0;
-  // #else
-  //   uint8_t d = 0;
-  //   uint32_t data = 0;
-  //   SPIx.setClockDivider(SPI_CLOCK_DIV16);
-  //   DataTransferBegin(DATASIZE_8BIT);
-  //   WriteReg(Reg);
+  uint32_t data = 0;
 
-  //   LOOP_L_N(i, 4) {
-  //     SPIx.read((uint8_t*)&d, 1);
-  //     data = (data << 8) | d;
-  //   }
+  #if PIN_EXISTS(TFT_MISO)
+    SPIx.setClockDivider(SPI_CLOCK_DIV16);
+    DataTransferBegin(DATASIZE_8BIT);
+    WriteReg(Reg);
 
-  //   DataTransferEnd();
-  //   SPIx.setClockDivider(SPI_CLOCK_MAX);
+    LOOP_L_N(i, 4) {
+      uint8_t d;
+      SPIx.read(&d, 1);
+      data = (data << 8) | d;
+    }
 
-  //   return data >> 7;
-  // #endif
+    DataTransferEnd();
+    SPIx.setClockDivider(SPI_CLOCK_MAX);
+  #endif
+
+  return data >> 7;
 }
 
 bool TFT_SPI::isBusy() {

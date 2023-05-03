@@ -101,50 +101,50 @@
 #define ILI9488_RDID2             0xDB // Read ID2
 #define ILI9488_RDID3             0xDC // Read ID3
 
-#define ILI9488_IFMODE            0xB0 // Interface Mode Control
-#define ILI9488_FRMCTR1           0xB1 // Frame Rate Control (In Normal Mode/Full Colors)
-#define ILI9488_FRMCTR2           0xB2 // Frame Rate Control (In Idle Mode/8 Colors)
-#define ILI9488_FRMCTR3           0xB3 // Frame Rate Control (In Partial Mode/Full Colors)
-#define ILI9488_INVTR             0xB4 // Display Inversion Control
-#define ILI9488_PRCTR             0xB5 // Blanking Porch Control
-#define ILI9488_DISCTRL           0xB6 // Display Function Control
-#define ILI9488_ETMOD             0xB7 // Entry Mode Set
-#define ILI9488_CECTRL1           0xB9 // Color Enhancement Control 1
-#define ILI9488_CECTRL2           0xBA // Color Enhancement Control 2
-#define ILI9488_HSLCTRL           0xBE // HS Lanes Control
-#define ILI9488_PWCTRL1           0xC0 // Power Control 1
-#define ILI9488_PWCTRL2           0xC1 // Power Control 2
-#define ILI9488_PWCTRL3           0xC2 // Power Control 3 (For Normal Mode)
-#define ILI9488_PWCTRL4           0xC3 // Power Control 4 (For Idle Mode)
-#define ILI9488_PWCTRL5           0xC4 // Power Control 5 (For Partial Mode)
-#define ILI9488_VMCTRL            0xC5 // VCOM Control
-#define ILI9488_CABCCTRL1         0xC6 // CABC Control 1
-#define ILI9488_CABCCTRL2         0xC8 // CABC Control 2
-#define ILI9488_CABCCTRL3         0xC9 // CABC Control 3
-#define ILI9488_CABCCTRL4         0xCA // CABC Control 4
-#define ILI9488_CABCCTRL5         0xCB // CABC Control 5
-#define ILI9488_CABCCTRL6         0xCC // CABC Control 6
-#define ILI9488_CABCCTRL7         0xCD // CABC Control 7
-#define ILI9488_CABCCTRL8         0xCE // CABC Control 8
-#define ILI9488_CABCCTRL9         0xCF // CABC Control 9
-#define ILI9488_NVMWR             0xD0 // NV Memory Write
-#define ILI9488_NVMPKEY           0xD1 // NV Memory Protection Key
-#define ILI9488_RDNVM             0xD2 // NV Memory Status Read
-#define ILI9488_RDID4             0xD3 // Read ID4 - 0x009488
-#define ILI9488_ADJCTL1           0xD7 // Adjust Control 1
-#define ILI9488_RDIDV             0xD8 // Read ID Version
-#define ILI9488_PGAMCTRL          0xE0 // Positive Gamma Control
-#define ILI9488_NGAMCTRL          0xE1 // Negative Gamma Control
-#define ILI9488_DGAMCTRL1         0xE2 // Ditigal Gamma Control 1
-#define ILI9488_DGAMCTRL2         0xE3 // Ditigal Gamma Control 2
-#define ILI9488_SETIMAGE          0xE9 // Set Image Function
-#define ILI9488_ADJCTL2           0xF2 // Adjust Control 2
-#define ILI9488_ADJCTL3           0xF7 // Adjust Control 3
-#define ILI9488_ADJCTL4           0xF8 // Adjust Control 4
-#define ILI9488_ADJCTL5           0xF9 // Adjust Control 5
-#define ILI9488_RDEXTC            0xFB // Read EXTC command is SPI mode
-#define ILI9488_ADJCTL6           0xFC // Adjust Control 6
-#define ILI9488_ADJCTL7           0xFF // Adjust Control 7
+#define ILI9488_IFMODE      0xB0 // Interface Mode Control
+#define ILI9488_FRMCTR1     0xB1 // Frame Rate Control (In Normal Mode/Full Colors)
+#define ILI9488_FRMCTR2     0xB2 // Frame Rate Control (In Idle Mode/8 Colors)
+#define ILI9488_FRMCTR3     0xB3 // Frame Rate Control (In Partial Mode/Full Colors)
+#define ILI9488_INVTR       0xB4 // Display Inversion Control
+#define ILI9488_PRCTR       0xB5 // Blanking Porch Control
+#define ILI9488_DISCTRL     0xB6 // Display Function Control
+#define ILI9488_ETMOD       0xB7 // Entry Mode Set
+#define ILI9488_CECTRL1     0xB9 // Color Enhancement Control 1
+#define ILI9488_CECTRL2     0xBA // Color Enhancement Control 2
+#define ILI9488_HSLCTRL     0xBE // HS Lanes Control
+#define ILI9488_PWCTRL1     0xC0 // Power Control 1
+#define ILI9488_PWCTRL2     0xC1 // Power Control 2
+#define ILI9488_PWCTRL3     0xC2 // Power Control 3 (For Normal Mode)
+#define ILI9488_PWCTRL4     0xC3 // Power Control 4 (For Idle Mode)
+#define ILI9488_PWCTRL5     0xC4 // Power Control 5 (For Partial Mode)
+#define ILI9488_VMCTRL      0xC5 // VCOM Control
+#define ILI9488_CABCCTRL1   0xC6 // CABC Control 1
+#define ILI9488_CABCCTRL2   0xC8 // CABC Control 2
+#define ILI9488_CABCCTRL3   0xC9 // CABC Control 3
+#define ILI9488_CABCCTRL4   0xCA // CABC Control 4
+#define ILI9488_CABCCTRL5   0xCB // CABC Control 5
+#define ILI9488_CABCCTRL6   0xCC // CABC Control 6
+#define ILI9488_CABCCTRL7   0xCD // CABC Control 7
+#define ILI9488_CABCCTRL8   0xCE // CABC Control 8
+#define ILI9488_CABCCTRL9   0xCF // CABC Control 9
+#define ILI9488_NVMWR       0xD0 // NV Memory Write
+#define ILI9488_NVMPKEY     0xD1 // NV Memory Protection Key
+#define ILI9488_RDNVM       0xD2 // NV Memory Status Read
+#define ILI9488_RDID4       0xD3 // Read ID4 - 0x009488
+#define ILI9488_ADJCTL1     0xD7 // Adjust Control 1
+#define ILI9488_RDIDV       0xD8 // Read ID Version
+#define ILI9488_PGAMCTRL    0xE0 // Positive Gamma Control
+#define ILI9488_NGAMCTRL    0xE1 // Negative Gamma Control
+#define ILI9488_DGAMCTRL1   0xE2 // Ditigal Gamma Control 1
+#define ILI9488_DGAMCTRL2   0xE3 // Ditigal Gamma Control 2
+#define ILI9488_SETIMAGE    0xE9 // Set Image Function
+#define ILI9488_ADJCTL2     0xF2 // Adjust Control 2
+#define ILI9488_ADJCTL3     0xF7 // Adjust Control 3
+#define ILI9488_ADJCTL4     0xF8 // Adjust Control 4
+#define ILI9488_ADJCTL5     0xF9 // Adjust Control 5
+#define ILI9488_RDEXTC      0xFB // Read EXTC command is SPI mode
+#define ILI9488_ADJCTL6     0xFC // Adjust Control 6
+#define ILI9488_ADJCTL7     0xFF // Adjust Control 7
 
 static const uint16_t ili9488_init[] = {
   DATASIZE_8BIT,
