@@ -1635,13 +1635,11 @@ void setup() {
   #if ENABLED(BD_SENSOR)
     SETUP_RUN(bdl.init(I2C_BD_SDA_PIN, I2C_BD_SCL_PIN, I2C_BD_DELAY));
   #endif
-  
-  #if ENABLED(LEVEING_CALIBRATION_MODULE)
-  	autoProbe.load_config();
-  	autoProbe.up_error_count = 0;
-	  autoProbe.down_error_count =0;
+
+  #if ENABLED(FT_MOTION)
+    SETUP_RUN(fxdTiCtrl.init());
   #endif
-  
+
   marlin_state = MF_RUNNING;
 
   #ifdef STARTUP_TUNE
