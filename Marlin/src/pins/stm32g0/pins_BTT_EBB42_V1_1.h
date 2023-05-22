@@ -125,8 +125,9 @@
 //
 // Heaters / Fans
 //
-#define HEATER_0_PIN                        PA2   // "HE"
-#define FAN_PIN                             PA0   // "FAN0"
+#define HEATER_0_PIN                        PA2   // "HE" V1.1
+#define HEATER_1_PIN                        PB13  // "HE" V1.2
+#define FAN_PIN                            PA0   // "FAN0"
 #define FAN1_PIN                            PA1   // "FAN1"
 
 //
