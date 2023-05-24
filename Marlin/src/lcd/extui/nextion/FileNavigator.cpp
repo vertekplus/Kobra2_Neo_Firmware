@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2022 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -21,24 +21,25 @@
  */
 
 /* ****************************************
- * lcd/extui/ia_creality/FileNavigator.cpp
+ * lcd/extui/nextion/FileNavigator.cpp
  * ****************************************
- * Extensible_UI implementation for Creality DWIN
- * 10SPro, Max, CR10V2
- * Based on implementations for Anycubic Chiron and Nextion by Nick Wells and Skorpi08
- * Written by Insanity Automation
+ * Extensible_UI implementation for Nextion
+ * https://github.com/Skorpi08
  * ***************************************/
 
 #include "../../../inc/MarlinConfigPre.h"
 
-#if DGUS_LCD_UI_IA_CREALITY
+#if ENABLED(NEXTION_TFT)
 
-#include "ia_creality_rts.h"
 #include "FileNavigator.h"
+#include "nextion_tft.h"
 
-#include <WString.h>
+using namespace ExtUI;
 
-ExtUI::FileList FileNavigator::filelist;                // ExtUI file API
+#define DEBUG_OUT NEXDEBUGLEVEL
+#include "../../../core/debug_out.h"
+
+FileList  FileNavigator::filelist;                      // ExtUI file API
 char      FileNavigator::currentDirPath[MAX_PATH_LEN];  // Current folder path
 uint16_t  FileNavigator::lastindex;
 uint8_t   FileNavigator::folderdepth;
@@ -60,22 +61,8 @@ void FileNavigator::reset() {
 
 void FileNavigator::refresh() { filelist.refresh(); }
 
-bool FileNavigator::getIndexisDir(uint16_t index){
-  filelist.seek(index);
-  return filelist.isDir();
-}
-
-const char *FileNavigator::getIndexName(uint16_t index){
-  filelist.seek(index);
-  return filelist.shortFilename();
-}
-
-uint16_t FileNavigator::maxFiles() {
-  return filelist.count();
-}
-
 void FileNavigator::getFiles(uint16_t index) {
-  uint16_t files = DISPLAY_FILES, fcnt  = 0;
+  uint16_t files = 7, fseek = 0, fcnt  = 0;
   if (index == 0)
     currentindex = 0;
   else {
@@ -91,58 +78,67 @@ void FileNavigator::getFiles(uint16_t index) {
   }
   lastindex = index;
 
-
-  // Clear currently drawn screen
-  for (int i = 0; i < DISPLAY_FILES; i++) {
-    for (int j = 0; j < 20; j++)
-      rts.sendData(0, SDFILE_ADDR + (i * 20) + j);
-  }
-
-  for (int j = 0; j < 10; j++) {
-    rts.sendData(0, Printfilename + j);  // clear screen.
-    rts.sendData(0, Choosefilename + j); // clear filename
-  }
-  for (int j = 0; j < 8; j++)
-    rts.sendData(0, FilenameCount + j);
-  for (int j = 1; j <= DISPLAY_FILES; j++) {
-    rts.sendData(10, FilenameIcon + j);
-    rts.sendData(10, FilenameIcon1 + j);
-  }
+  #if NEXDEBUG(AC_FILE)
+    DEBUG_ECHOLNPGM("index=", index, " currentindex=", currentindex);
+  #endif
 
   if (currentindex == 0 && folderdepth > 0) { // Add a link to go up a folder
+    nextion.tftSend(F("vis p0,1"));
+    nextion.tftSend(F("\xFF\xFF\xFF"));
+    SEND_VAL("tmpUP", "0");
     files--;
-    rts.sendData("Up Directory", SDFILE_ADDR);
-    fcnt++;
   }
-  else if (currentindex == DISPLAY_FILES && folderdepth > 0)
-    currentindex--;
+  else {
+    nextion.tftSend(F("vis p0,0"));
+    nextion.tftSend(F("\xFF\xFF\xFF"));
+  }
 
   for (uint16_t seek = currentindex; seek < currentindex + files; seek++) {
     if (filelist.seek(seek)) {
-      const int filelen = strlen(filelist.filename());
-      if (filelen > 20) {
-        char *buf = (char *)filelist.filename();
-        buf[18] = '\0'; // cutoff at screen edge
-        rts.sendData(buf, (SDFILE_ADDR + (fcnt * 20)));
-      }
-      else
-        rts.sendData(filelist.filename(), (SDFILE_ADDR + (fcnt * 20)));
-
+      nextion.tftSend(F("s"));
+      LCD_SERIAL.print(fcnt);
+      nextion.tftSend(F(".txt=\""));
       if (filelist.isDir()) {
-        rts.sendData((uint8_t)4, FilenameIcon + (fcnt+1));
-        rts.sendData((unsigned long)0x041F, (FilenameNature + ((1+fcnt) * 16))); // Change BG of selected line to Blue
+        LCD_SERIAL.print(filelist.shortFilename());
+        nextion.tftSend(F("/\""));
+        nextion.tftSend(F("\xFF\xFF\xFF"));
+
+        nextion.tftSend(F("l"));
+        LCD_SERIAL.print(fcnt);
+        nextion.tftSend(F(".txt=\""));
+        LCD_SERIAL.print(filelist.filename());
+        nextion.tftSend(F("\""));
+        nextion.tftSend(F("\xFF\xFF\xFF"));
+        SEND_PCO2("l", fcnt, "1055");
       }
       else {
-        rts.sendData((uint8_t)0, FilenameIcon + (fcnt+1));
-        rts.sendData((unsigned long)0xFFFF, (FilenameNature + ((1+fcnt) * 16))); // white
+        LCD_SERIAL.print(currentDirPath);
+        LCD_SERIAL.print(filelist.shortFilename());
+        nextion.tftSend(F("\""));
+        nextion.tftSend(F("\xFF\xFF\xFF"));
+
+        nextion.tftSend(F("l"));
+        LCD_SERIAL.print(fcnt);
+        nextion.tftSend(F(".txt=\""));
+        LCD_SERIAL.print(filelist.longFilename());
+        nextion.tftSend(F("\""));
+        nextion.tftSend(F("\xFF\xFF\xFF"));
       }
-      SERIAL_ECHOLNPGM("-", seek, " '", filelist.filename(), "' '", currentDirPath, "", filelist.shortFilename(), "'\n");
       fcnt++;
+      fseek = seek;
+      #if NEXDEBUG(AC_FILE)
+        DEBUG_ECHOLNPGM("-", seek, " '", filelist.longFilename(), "' '", currentDirPath, "", filelist.shortFilename(), "'\n");
+      #endif
     }
   }
+  SEND_VAL("n0", filelist.count());
+  SEND_VAL("n1", fseek + 1);
 }
 
 void FileNavigator::changeDIR(char *folder) {
+  #if NEXDEBUG(AC_FILE)
+    DEBUG_ECHOLNPGM("currentfolder: ", currentDirPath, "  New: ", folder);
+  #endif
   if (folderdepth >= MAX_FOLDER_DEPTH) return; // limit the folder depth
   strcat(currentDirPath, folder);
   strcat(currentDirPath, "/");
@@ -168,8 +164,11 @@ void FileNavigator::upDIR() {
       pos = strchr(currentDirPath, '/');
     pos[1] = '\0';
   }
+  #if NEXDEBUG(AC_FILE)
+    DEBUG_ECHOLNPGM("depth: ", folderdepth, " currentDirPath: ", currentDirPath);
+  #endif
 }
 
 char* FileNavigator::getCurrentDirPath() { return currentDirPath; }
 
-#endif // DGUS_LCD_UI_IA_CREALITY
+#endif // NEXTION_TFT

@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -21,33 +21,33 @@
  */
 
 /**
- * lcd/extui/anycubic_chiron/chiron_extui.cpp
+ * lcd/extui/anycubic_vyper/vyper_extui.cpp
  *
- * Anycubic Chiron TFT support for Marlin
+ * Anycubic Dgus TFT support for Marlin
  */
 
 #include "../../../inc/MarlinConfigPre.h"
 
-#if ENABLED(ANYCUBIC_LCD_CHIRON)
+#if ENABLED(ANYCUBIC_LCD_VYPER)
 
 #include "../ui_api.h"
-#include "chiron_tft.h"
+#include "dgus_tft.h"
 
 using namespace Anycubic;
 
 namespace ExtUI {
 
-  void onStartup() { chiron.startup(); }
+  void onStartup() { Dgus.startup(); }
 
-  void onIdle() { chiron.idleLoop(); }
+  void onIdle() { Dgus.idleLoop(); }
 
   void onPrinterKilled(FSTR_P const error, FSTR_P const component) {
-    chiron.printerKilled(error, component);
+    Dgus.printerKilled(error, component);
   }
 
-  void onMediaInserted() { chiron.mediaEvent(AC_media_inserted); }
-  void onMediaError()    { chiron.mediaEvent(AC_media_error);    }
-  void onMediaRemoved()  { chiron.mediaEvent(AC_media_removed);  }
+  void onMediaInserted() { Dgus.mediaEvent(AC_media_inserted); }
+  void onMediaError()    { Dgus.mediaEvent(AC_media_error);    }
+  void onMediaRemoved()  { Dgus.mediaEvent(AC_media_removed);  }
 
   void onPlayTone(const uint16_t frequency, const uint16_t duration) {
     #if ENABLED(SPEAKER)
@@ -55,29 +55,31 @@ namespace ExtUI {
     #endif
   }
 
-  void onPrintTimerStarted() { chiron.timerEvent(AC_timer_started); }
-  void onPrintTimerPaused()  { chiron.timerEvent(AC_timer_paused);  }
-  void onPrintTimerStopped() { chiron.timerEvent(AC_timer_stopped); }
+  void onPrintTimerStarted() { Dgus.timerEvent(AC_timer_started); }
+  void onPrintTimerPaused()  { Dgus.timerEvent(AC_timer_paused);  }
+  void onPrintTimerStopped() { Dgus.timerEvent(AC_timer_stopped); }
   void onPrintDone() {}
 
-  void onFilamentRunout(const extruder_t)            { chiron.filamentRunout();             }
+  void onFilamentRunout(const extruder_t)            { Dgus.filamentRunout();             }
 
-  void onUserConfirmRequired(const char * const msg) { chiron.confirmationRequest(msg);     }
-  void onStatusChanged(const char * const msg)       { chiron.statusChange(msg);            }
+  void onUserConfirmRequired(const char * const msg) { Dgus.confirmationRequest(msg);     }
+  void onStatusChanged(const char * const msg)       { Dgus.statusChange(msg);            }
 
-  void onHomingStart() {}
-  void onHomingDone() {}
+  void onHomingStart()    { Dgus.HomingStart(); }
+  void onHomingDone()     { Dgus.HomingComplete(); }
 
-  void onFactoryReset() {}
+  void onFactoryReset() {
+    Dgus.page_index_now = 121;
+    Dgus.lcd_info.audio_on = DISABLED(SPEAKER);
+  }
 
   void onStoreSettings(char *buff) {
     // Called when saving to EEPROM (i.e. M500). If the ExtUI needs
     // permanent data to be stored, it can write up to eeprom_data_size bytes
     // into buff.
 
-    // Example:
-    //  static_assert(sizeof(myDataStruct) <= eeprom_data_size);
-    //  memcpy(buff, &myDataStruct, sizeof(myDataStruct));
+    static_assert(sizeof(Dgus.lcd_info) <= ExtUI::eeprom_data_size);
+    memcpy(buff, &Dgus.lcd_info, sizeof(Dgus.lcd_info));
   }
 
   void onLoadSettings(const char *buff) {
@@ -85,13 +87,15 @@ namespace ExtUI {
     // needs to retrieve data, it should copy up to eeprom_data_size bytes
     // from buff
 
-    // Example:
-    //  static_assert(sizeof(myDataStruct) <= eeprom_data_size);
-    //  memcpy(&myDataStruct, buff, sizeof(myDataStruct));
+    static_assert(sizeof(Dgus.lcd_info) <= ExtUI::eeprom_data_size);
+    memcpy(&Dgus.lcd_info, buff, sizeof(Dgus.lcd_info));
+    memcpy(&Dgus.lcd_info_back, buff, sizeof(Dgus.lcd_info_back));
   }
 
   void onPostprocessSettings() {
     // Called after loading or resetting stored settings
+    Dgus.ParamInit();
+    Dgus.PowerLoss();
   }
 
   void onSettingsStored(const bool success) {
@@ -120,19 +124,24 @@ namespace ExtUI {
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
-    void onSetPowerLoss(const bool onoff) {
-      // Called when power-loss is enabled/disabled
-    }
-    void onPowerLoss() {
-      // Called when power-loss state is detected
-    }
+    // Called when power-loss is enabled/disabled
+    void onSetPowerLoss(const bool) { Dgus.PowerLoss(); }
+    // Called when power-loss state is detected
+    void onPowerLoss() { /* handled internally */ }
     // Called on resume from power-loss
-    void onPowerLossResume() { chiron.powerLossRecovery(); }
+    void onPowerLossResume() { Dgus.powerLossRecovery(); }
   #endif
 
   #if HAS_PID_HEATING
     void onPidTuning(const result_t rst) {
       // Called for temperature PID tuning result
+      switch (rst) {
+        case PID_STARTED:        break;
+        case PID_BAD_HEATER_ID:  break;
+        case PID_TEMP_TOO_HIGH:  break;
+        case PID_TUNING_TIMEOUT: break;
+        case PID_DONE:           break;
+      }
     }
   #endif
 
@@ -140,4 +149,4 @@ namespace ExtUI {
   void onSteppersEnabled()  {}
 }
 
-#endif // ANYCUBIC_LCD_CHIRON
+#endif // ANYCUBIC_LCD_VYPER
