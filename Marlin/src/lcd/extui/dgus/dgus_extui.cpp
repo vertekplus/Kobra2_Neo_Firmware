@@ -52,7 +52,7 @@ namespace ExtUI {
   void onMediaError()    { TERN_(SDSUPPORT, ScreenHandler.SDCardError()); }
   void onMediaRemoved()  { TERN_(SDSUPPORT, ScreenHandler.SDCardRemoved()); }
 
-  void onPlayTone(const uint16_t frequency, const uint16_t duration) {}
+  void onPlayTone(const uint16_t frequency, const uint16_t duration/*=0*/) {}
   void onPrintTimerStarted() {}
   void onPrintTimerPaused() {}
   void onPrintTimerStopped() {}

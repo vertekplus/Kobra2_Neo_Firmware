@@ -45,11 +45,11 @@ public:
   static void ConfigurationStoreWritten(bool success);
   static void ConfigurationStoreRead(bool success);
 
-  static void PlayTone(const uint16_t frequency, const uint16_t duration);
-  static void MeshUpdate(const int8_t xpos, const int8_t ypos);
-  static void PrintTimerStarted();
-  static void PrintTimerPaused();
-  static void PrintTimerStopped();
+  static void playTone(const uint16_t frequency, const uint16_t duration=0);
+  static void meshUpdate(const int8_t xpos, const int8_t ypos);
+  static void printTimerStarted();
+  static void printTimerPaused();
+  static void printTimerStopped();
   static void filamentRunout(const ExtUI::extruder_t extruder);
 
   #if ENABLED(SDSUPPORT)
