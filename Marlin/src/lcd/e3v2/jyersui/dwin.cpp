@@ -1392,7 +1392,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
           break;
       }
       break;
-    case ManualLevel:
+    case ManualLevel: {
 
       #define MLEVEL_BACK 0
       #define MLEVEL_PROBE (MLEVEL_BACK + ENABLED(HAS_BED_PROBE))
@@ -1407,6 +1407,13 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
       static float mlev_z_pos = 0;
       static bool use_probe = false;
 
+      #if HAS_BED_PROBE
+        const float probe_x_min = _MAX(0 + corner_pos, X_MIN_POS + probe.offset.x, X_MIN_POS + PROBING_MARGIN) - probe.offset.x,
+                    probe_x_max = _MIN((X_BED_SIZE + X_MIN_POS) - corner_pos, X_MAX_POS + probe.offset.x, X_MAX_POS - PROBING_MARGIN) - probe.offset.x,
+                    probe_y_min = _MAX(0 + corner_pos, Y_MIN_POS + probe.offset.y, Y_MIN_POS + PROBING_MARGIN) - probe.offset.y,
+                    probe_y_max = _MIN((Y_BED_SIZE + Y_MIN_POS) - corner_pos, Y_MAX_POS + probe.offset.y, Y_MAX_POS - PROBING_MARGIN) - probe.offset.y;
+      #endif
+
       switch (item) {
         case MLEVEL_BACK:
           if (draw)
@@ -1416,6 +1423,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
             Draw_Menu(Prepare, PREPARE_MANUALLEVEL);
           }
           break;
+
         #if HAS_BED_PROBE
           case MLEVEL_PROBE:
             if (draw) {
@@ -1427,6 +1435,12 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
               Draw_Checkbox(row, use_probe);
               if (use_probe) {
                 Popup_Handler(Level);
+                const struct { xy_pos_t p; ProbePtRaise r; } points[] = {
+                  { { probe_x_min, probe_y_min }, PROBE_PT_RAISE },
+                  { { probe_x_min, probe_y_max }, PROBE_PT_RAISE },
+                  { { probe_x_max, probe_y_max }, PROBE_PT_RAISE },
+                  { { probe_x_max, probe_y_min }, PROBE_PT_STOW }
+                };
                 corner_avg = 0;
                 #define PROBE_X_MIN _MAX(0 + corner_pos, X_MIN_POS + probe.offset.x, X_MIN_POS + PROBING_MARGIN) - probe.offset.x
                 #define PROBE_X_MAX _MIN((X_BED_SIZE + X_MIN_POS) - corner_pos, X_MAX_POS + probe.offset.x, X_MAX_POS - PROBING_MARGIN) - probe.offset.x
@@ -1442,6 +1456,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
             }
             break;
         #endif
+
         case MLEVEL_BL:
           if (draw)
             Draw_Menu_Item(row, ICON_AxisBL, F("Bottom Left"));
@@ -1556,7 +1571,9 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
             Modify_Value(mlev_z_pos, 0, MAX_Z_OFFSET, 100);
           break;
       }
-      break;
+
+    } break;
+
     #if HAS_ZOFFSET_ITEM
       case ZOffset:
 
