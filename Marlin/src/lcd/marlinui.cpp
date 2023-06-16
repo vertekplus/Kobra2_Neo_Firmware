@@ -1829,7 +1829,7 @@ void MarlinUI::init() {
     LCD_MESSAGE(MSG_PRINT_ABORTED);
 
     TERN_(HAS_MARLINUI_MENU, return_to_status());
-    TERN_(DWIN_LCD_PROUI, HMI_flag.abort_flag = true);
+    TERN_(DWIN_LCD_PROUI, hmiFlag.abort_flag = true);
   }
 
   #if BOTH(HAS_MARLINUI_MENU, PSU_CONTROL)
