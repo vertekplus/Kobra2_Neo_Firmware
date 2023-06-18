@@ -39,10 +39,6 @@
   #include "../../feature/bedlevel/bedlevel.h"
 #endif
 
-#if ENABLED(BD_SENSOR)
-  #include "../../feature/bedlevel/bdl/bdl.h"
-#endif
-
 #if ENABLED(SENSORLESS_HOMING)
   #include "../../feature/tmc_util.h"
 #endif

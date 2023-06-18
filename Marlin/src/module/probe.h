@@ -42,11 +42,19 @@
   };
 #endif
 
-#if USES_Z_MIN_PROBE_PIN
-  #define PROBE_TRIGGERED() (READ(Z_MIN_PROBE_PIN) != Z_MIN_PROBE_ENDSTOP_INVERTING)
+#if ENABLED(BD_SENSOR)
+  #define PROBE_READ() bdp_state
+#elif USE_Z_MIN_PROBE
+  #define PROBE_READ() READ(Z_MIN_PROBE_PIN)
 #else
-  #define PROBE_TRIGGERED() (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)
+  #define PROBE_READ() READ(Z_MIN_PIN)
 #endif
+#if USE_Z_MIN_PROBE
+  #define PROBE_HIT_STATE Z_MIN_PROBE_ENDSTOP_HIT_STATE
+#else
+  #define PROBE_HIT_STATE Z_MIN_ENDSTOP_HIT_STATE
+#endif
+#define PROBE_TRIGGERED() (PROBE_READ() == PROBE_HIT_STATE)
 
 // In BLTOUCH HS mode, the probe travels in a deployed state.
 #define Z_PROBE_SAFE_CLEARANCE SUM_TERN(BLTOUCH, Z_CLEARANCE_BETWEEN_PROBES, bltouch.z_extra_clearance())
