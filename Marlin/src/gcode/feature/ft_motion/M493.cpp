@@ -191,20 +191,27 @@ void GcodeSuite::M493() {
         return;
     }
 
-    if (fxdTiCtrl.cfg.mode != oldmm) switch (newmm) {
-      default: break;
-      #if HAS_X_AXIS
-        case ftMotionMode_ZV:
-        case ftMotionMode_ZVD:
-        case ftMotionMode_EI:
-        case ftMotionMode_2HEI:
-        case ftMotionMode_3HEI:
-        case ftMotionMode_MZV:
-          flag.update_n = flag.update_a = true;
-      #endif
-      case ftMotionMode_ENABLED:
-        flag.reset_ft = true;
-        break;
+    if (newmm != oldmm) {
+      switch (newmm) {
+        default: SERIAL_ECHOLNPGM("?Invalid control mode [S] value."); return;
+        #if HAS_X_AXIS
+          case ftMotionMode_ZV:
+          case ftMotionMode_ZVD:
+          case ftMotionMode_EI:
+          case ftMotionMode_2HEI:
+          case ftMotionMode_3HEI:
+          case ftMotionMode_MZV:
+          //case ftMotionMode_ULENDO_FBS:
+          //case ftMotionMode_DISCTF:
+            flag.update_n = flag.update_a = true;
+        #endif
+        case ftMotionMode_DISABLED:
+        case ftMotionMode_ENABLED:
+          fxdTiCtrl.cfg.mode = newmm;
+          flag.report_h = true;
+          if (oldmm == ftMotionMode_DISABLED) flag.reset_ft = true;
+          break;
+      }
     }
   }
 
