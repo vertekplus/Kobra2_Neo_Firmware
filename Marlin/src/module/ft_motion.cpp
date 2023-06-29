@@ -75,17 +75,18 @@ bool FxdTiCtrl::sts_stepperBusy = false;          // The stepper buffer has item
   float FxdTiCtrl::ed[2 * (FTM_BATCH_SIZE)], FxdTiCtrl::em[FTM_BATCH_SIZE];
 #endif
 
-block_t* FxdTiCtrl::current_block_cpy = nullptr; // Pointer to current block being processed.
-bool FxdTiCtrl::blockProcRdy = false,           // Indicates a block is ready to be processed.
-     FxdTiCtrl::blockProcRdy_z1 = false,        // Storage for the previous indicator.
-     FxdTiCtrl::blockProcDn = false;            // Indicates current block is done being processed.
-bool FxdTiCtrl::batchRdy = false;               // Indicates a batch of the fixed time trajectory
-                                                //  has been generated, is now available in the upper -
-                                                //  half of xd, yd, zd, ed vectors, and is ready to be
-                                                //  post processed, if applicable, then interpolated.
-bool FxdTiCtrl::batchRdyForInterp = false;      // Indicates the batch is done being post processed,
-                                                //  if applicable, and is ready to be converted to step commands.
-bool FxdTiCtrl::runoutEna = false;              // True if runout of the block hasn't been done and is allowed.
+block_t* FxdTiCtrl::current_block_cpy = nullptr;  // Pointer to current block being processed.
+bool FxdTiCtrl::blockProcRdy = false,             // Indicates a block is ready to be processed.
+     FxdTiCtrl::blockProcRdy_z1 = false,          // Storage for the previous indicator.
+     FxdTiCtrl::blockProcDn = false;              // Indicates current block is done being processed.
+bool FxdTiCtrl::batchRdy = false;                 // Indicates a batch of the fixed time trajectory
+                                                  //  has been generated, is now available in the upper -
+                                                  //  half of traj.x[], y, z ... e vectors, and is ready to be
+                                                  //  post processed, if applicable, then interpolated.
+bool FxdTiCtrl::batchRdyForInterp = false;        // Indicates the batch is done being post processed,
+                                                  //  if applicable, and is ready to be converted to step commands.
+bool FxdTiCtrl::runoutEna = false;                // True if runout of the block hasn't been done and is allowed.
+bool FxdTiCtrl::runout = false;                   // Indicates if runout is in progress.
 
 // Trapezoid data variables.
 #if HAS_X_AXIS
@@ -168,6 +169,8 @@ hal_timer_t FxdTiCtrl::nextStepTicks = FTM_MIN_TICKS; // Accumulator for the nex
   float FxdTiCtrl::e_advanced_z1 = 0.0f;        // (ms) Unit delay of advanced extruder position.
 #endif
 
+constexpr uint32_t last_batchIdx = (FTM_WINDOW_SIZE) - (FTM_BATCH_SIZE);
+
 //-----------------------------------------------------------------//
 // Function definitions.
 //-----------------------------------------------------------------//
@@ -188,16 +191,25 @@ void FxdTiCtrl::runoutBlock() {
   if (runoutEna && !batchRdy) {   // If the window is full already (block intervals was a multiple of
                                   // the batch size), or runout is not enabled, no runout is needed.
     // Fill out the trajectory window with the last position calculated.
-    if (makeVector_batchIdx > FTM_BATCH_SIZE) {
-      for (uint32_t i = makeVector_batchIdx; i < 2 * (FTM_BATCH_SIZE); i++) {
-                             xd[i] = xd[makeVector_batchIdx - 1];
-        TERN_(HAS_Y_AXIS,    yd[i] = yd[makeVector_batchIdx - 1]);
-        TERN_(HAS_Y_AXIS,    zd[i] = zd[makeVector_batchIdx - 1]);
-        TERN_(HAS_EXTRUDERS, ed[i] = ed[makeVector_batchIdx - 1]);
+    if (makeVector_batchIdx > last_batchIdx)
+      for (uint32_t i = makeVector_batchIdx; i < (FTM_WINDOW_SIZE); i++) {
+        LOGICAL_AXIS_CODE(
+          traj.e[i] = traj.e[makeVector_batchIdx - 1],
+          traj.x[i] = traj.x[makeVector_batchIdx - 1],
+          traj.y[i] = traj.y[makeVector_batchIdx - 1],
+          traj.z[i] = traj.z[makeVector_batchIdx - 1],
+          traj.i[i] = traj.i[makeVector_batchIdx - 1],
+          traj.j[i] = traj.j[makeVector_batchIdx - 1],
+          traj.k[i] = traj.k[makeVector_batchIdx - 1],
+          traj.u[i] = traj.u[makeVector_batchIdx - 1],
+          traj.v[i] = traj.v[makeVector_batchIdx - 1],
+          traj.w[i] = traj.w[makeVector_batchIdx - 1]
+        );
       }
-    }
-    makeVector_batchIdx = FTM_BATCH_SIZE;
+
+    makeVector_batchIdx = last_batchIdx;
     batchRdy = true;
+    runout = true;
   }
   runoutEna = false;
 }
@@ -221,12 +233,33 @@ void FxdTiCtrl::loop() {
   }
 
   // Planner processing and block conversion.
-  if (!blockProcRdy) stepper.fxdTiCtrl_BlockQueueUpdate();
+  if (!blockProcRdy && !runout) stepper.fxdTiCtrl_BlockQueueUpdate();
 
   if (blockProcRdy) {
     if (!blockProcRdy_z1) loadBlockData(current_block_cpy); // One-shot.
     while (!blockProcDn && !batchRdy && (makeVector_idx - makeVector_idx_z1 < (FTM_POINTS_PER_LOOP)))
       makeVector();
+  }
+
+  if (runout && !batchRdy) { // The lower half of the window has been runout.
+    // Runout the upper half of the window: the upper half has been shifted into the lower
+    // half. Fill out the upper half so another batch can be processed.
+    for (uint32_t i = last_batchIdx; i < (FTM_WINDOW_SIZE) - 1; i++) {
+      LOGICAL_AXIS_CODE(
+        traj.e[i] = traj.e[(FTM_WINDOW_SIZE) - 1],
+        traj.x[i] = traj.x[(FTM_WINDOW_SIZE) - 1],
+        traj.y[i] = traj.y[(FTM_WINDOW_SIZE) - 1],
+        traj.z[i] = traj.z[(FTM_WINDOW_SIZE) - 1],
+        traj.i[i] = traj.i[(FTM_WINDOW_SIZE) - 1],
+        traj.j[i] = traj.j[(FTM_WINDOW_SIZE) - 1],
+        traj.k[i] = traj.k[(FTM_WINDOW_SIZE) - 1],
+        traj.u[i] = traj.u[(FTM_WINDOW_SIZE) - 1],
+        traj.v[i] = traj.v[(FTM_WINDOW_SIZE) - 1],
+        traj.w[i] = traj.w[(FTM_WINDOW_SIZE) - 1]
+      );
+    }
+    batchRdy = true;
+    runout = false;
   }
 
   // FBS / post processing.
@@ -417,16 +450,13 @@ void FxdTiCtrl::reset() {
 
   stepperCmdBuff_produceIdx = stepperCmdBuff_consumeIdx = 0;
 
-  for (uint32_t i = 0U; i < (FTM_BATCH_SIZE); i++) { // Reset trajectory history
-    TERN_(HAS_X_AXIS, xd[i] = 0.0f);
-    TERN_(HAS_Y_AXIS, yd[i] = 0.0f);
-    TERN_(HAS_Z_AXIS, zd[i] = 0.0f);
-    TERN_(HAS_EXTRUDERS, ed[i] = 0.0f);
-  }
+  traj.reset(); // Reset trajectory history
+  trajMod.reset(); // Reset modified trajectory history
 
   blockProcRdy = blockProcRdy_z1 = blockProcDn = false;
   batchRdy = batchRdyForInterp = false;
   runoutEna = false;
+  runout = false;
 
   TERN_(HAS_X_AXIS, x_endPosn_prevBlock = 0.0f);
   TERN_(HAS_Y_AXIS, y_endPosn_prevBlock = 0.0f);
@@ -665,8 +695,8 @@ void FxdTiCtrl::makeVector() {
   #endif
 
   // Filled up the queue with regular and shaped steps
-  if (++makeVector_batchIdx == 2 * (FTM_BATCH_SIZE)) {
-    makeVector_batchIdx = FTM_BATCH_SIZE;
+  if (++makeVector_batchIdx == (FTM_WINDOW_SIZE)) {
+    makeVector_batchIdx = last_batchIdx;
     batchRdy = true;
   }
 

@@ -48,6 +48,11 @@ enum stepDirState_t {
   stepDirState_NEG     = 2U
 };
 
+typedef struct XYZEarray<float, FTM_WINDOW_SIZE> xyze_trajectory_t;
+typedef struct XYZEarray<float, FTM_BATCH_SIZE> xyze_trajectoryMod_t;
+
+typedef struct XYZEval<stepDirState_t> xyze_stepDir_t;
+
 enum {
   FT_BIT_DIR_E, FT_BIT_STEP_E,
   FT_BIT_DIR_Z, FT_BIT_STEP_Z,
