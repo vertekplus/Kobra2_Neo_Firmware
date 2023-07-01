@@ -356,7 +356,7 @@ void Draw_Steps_Menu();
   #endif
 #endif
 #if HAS_TRINAMIC_CONFIG
-  void Draw_TrinamicConfig_menu();
+  void drawTrinamicConfigMenu();
 #endif
 
 // Custom colors editing
