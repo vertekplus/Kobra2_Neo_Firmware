@@ -574,11 +574,11 @@ void Draw_Print_ProgressElapsed() {
 }
 
 #if ENABLED(SHOW_REMAINING_TIME)
-  void Draw_Print_ProgressRemain() {
-    const uint32_t _remain_time = ui.get_remaining_time();
-    char buf[10];
-    sprintf_P(buf, PSTR("%02i:%02i "), (uint16_t)(_remain_time / 3600), ((uint16_t)_remain_time % 3600) / 60);
-    DWINUI::Draw_String(HMI_data.Text_Color, HMI_data.Background_Color, 181, 192, buf);
+  uint32_t _remain_time = 0;
+  void drawPrintProgressRemain() {
+    MString<12> buf;
+    buf.setf(F("%02i:%02i "), _remain_time / 3600, (_remain_time % 3600) / 60);
+    DWINUI::drawString(hmiData.colorText, hmiData.colorBackground, 181, 192, buf);
   }
 #endif
 
@@ -1315,7 +1315,6 @@ void EachMomentUpdate() {
 
       // Remaining time
       #if ENABLED(SHOW_REMAINING_TIME)
-        static uint32_t _remain_time = 0;
         if (_remain_time != ui.get_remaining_time()) {
           _remain_time = ui.get_remaining_time();
           Draw_Print_ProgressRemain();
