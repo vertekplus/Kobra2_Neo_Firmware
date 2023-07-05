@@ -391,6 +391,10 @@ public:
     static constexpr uint8_t get_progress_percent() { return 0; }
   #endif
 
+  static void host_notify_P(PGM_P const fstr);
+  static void host_notify(FSTR_P const fstr) { host_notify_P(FTOP(fstr)); }
+  static void host_notify(const char * const cstr);
+
   #if HAS_STATUS_MESSAGE
 
     #if EITHER(HAS_WIRED_LCD, DWIN_LCD_PROUI)

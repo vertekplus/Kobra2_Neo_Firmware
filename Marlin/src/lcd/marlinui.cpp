@@ -1590,6 +1590,15 @@ void MarlinUI::init() {
 
 #endif // HAS_WIRED_LCD
 
+void MarlinUI::host_notify_P(PGM_P const pstr) {
+  TERN_(HOST_STATUS_NOTIFICATIONS, hostui.notify_P(pstr));
+}
+void MarlinUI::host_notify(const char * const cstr) {
+  TERN_(HOST_STATUS_NOTIFICATIONS, hostui.notify(cstr));
+}
+
+#include <stdarg.h>
+
 #if HAS_STATUS_MESSAGE
 
   ////////////////////////////////////////////
@@ -1728,8 +1737,8 @@ void MarlinUI::init() {
     va_start(args, FTOP(fmt));
     vsnprintf_P(status_message, MAX_MESSAGE_LENGTH, FTOP(fmt), args);
     va_end(args);
-  
-    TERN_(HOST_STATUS_NOTIFICATIONS, hostui.notify(status_message));
+
+    host_notify(status_message);
 
     finish_status(level > 0);
   }
@@ -1800,8 +1809,18 @@ void MarlinUI::init() {
   void MarlinUI::set_status(FSTR_P const fstr, const int8_t) {
     TERN(HOST_PROMPT_SUPPORT, hostui.notify(fstr), UNUSED(fstr));
   }
-  void MarlinUI::status_printf(int8_t, FSTR_P const fstr, ...) {
-    TERN(HOST_PROMPT_SUPPORT, hostui.notify(fstr), UNUSED(fstr));
+  void MarlinUI::_set_status_and_level(const char * const ustr, const int8_t=0, const bool pgm) {
+    pgm ? host_notify_P(ustr) : host_notify(ustr);
+  }
+  void MarlinUI::status_printf_P(int8_t level, PGM_P const fmt, ...) {
+    MString<30> msg;
+
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf_P(&msg, 30, fmt, args);
+    va_end(args);
+
+    host_notify(msg);
   }
 
 #endif // !HAS_STATUS_MESSAGE
