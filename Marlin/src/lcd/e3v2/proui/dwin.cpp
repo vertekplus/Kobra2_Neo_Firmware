@@ -2359,14 +2359,8 @@ void SetFlow() { SetPIntOnClick(MIN_PRINT_FLOW, MAX_PRINT_FLOW, []{ planner.refr
         zval = probe.probe_at_point(xpos, ypos, PROBE_PT_STOW);
         if (isnan(zval))
           LCD_MESSAGE(MSG_ZPROBE_OUT);
-        else {
-          sprintf_P(cmd, PSTR("X:%s, Y:%s, Z:%s"),
-            dtostrf(xpos, 1, 1, str_1),
-            dtostrf(ypos, 1, 1, str_2),
-            dtostrf(zval, 1, 2, str_3)
-          );
-          ui.set_status(cmd);
-        }
+        else
+          ui.set_status(TS(F("X:"), p_float_t(xpos, 1), F(" Y:"), p_float_t(ypos, 1), F(" Z:"), p_float_t(zval, 2)));
         inLev = false;
       }
       return zval;
@@ -2385,14 +2379,6 @@ void SetFlow() { SetPIntOnClick(MIN_PRINT_FLOW, MAX_PRINT_FLOW, []{ planner.refr
 
   #endif
 
-  inline void TramFL() { Tram(0); }
-  inline void TramFR() { Tram(1); }
-  inline void TramBR() { Tram(2); }
-  inline void TramBL() { Tram(3); }
-  #if ENABLED(BED_TRAMMING_INCLUDE_CENTER)
-    inline void TramC() { Tram(4); }
-  #endif
-
   #if HAS_BED_PROBE && HAS_MESH
 
     void Trammingwizard() {
@@ -2401,15 +2387,15 @@ void SetFlow() { SetPIntOnClick(MIN_PRINT_FLOW, MAX_PRINT_FLOW, []{ planner.refr
         return;
       }
       bed_mesh_t zval = {0};
-      zval[0][0] = TramFL();
-      checkkey = NothingToDo;
-      MeshViewer.DrawMesh(zval, 2, 2);
-      zval[1][0] = TramFR();
-      MeshViewer.DrawMesh(zval, 2, 2);
-      zval[1][1] = TramBR();
-      MeshViewer.DrawMesh(zval, 2, 2);
-      zval[0][1] = TramBL();
-      MeshViewer.DrawMesh(zval, 2, 2);
+      zval[0][0] = tram(0);
+      checkkey = ID_NothingToDo;
+      meshViewer.drawMesh(zval, 2, 2);
+      zval[1][0] = tram(1);
+      meshViewer.drawMesh(zval, 2, 2);
+      zval[1][1] = tram(2);
+      meshViewer.drawMesh(zval, 2, 2);
+      zval[0][1] = tram(3);
+      meshViewer.drawMesh(zval, 2, 2);
 
       DWINUI::Draw_CenteredString(140, F("Calculating average"));
       DWINUI::Draw_CenteredString(160, F("and relative heights"));
@@ -3041,12 +3027,12 @@ void Draw_Prepare_Menu() {
       #elif !HAS_BED_PROBE && HAS_ZOFFSET_ITEM
         MENU_ITEM_F(ICON_MoveZ0, "Home Z and disable", onDrawMenuItem, HomeZandDisable);
       #endif
-      MENU_ITEM(ICON_Axis, MSG_TRAM_FL, onDrawMenuItem, TramFL);
-      MENU_ITEM(ICON_Axis, MSG_TRAM_FR, onDrawMenuItem, TramFR);
-      MENU_ITEM(ICON_Axis, MSG_TRAM_BR, onDrawMenuItem, TramBR);
-      MENU_ITEM(ICON_Axis, MSG_TRAM_BL, onDrawMenuItem, TramBL);
+      MENU_ITEM(ICON_Axis, MSG_TRAM_FL, onDrawMenuItem, []{ (void)tram(0); });
+      MENU_ITEM(ICON_Axis, MSG_TRAM_FR, onDrawMenuItem, []{ (void)tram(1); });
+      MENU_ITEM(ICON_Axis, MSG_TRAM_BR, onDrawMenuItem, []{ (void)tram(2); });
+      MENU_ITEM(ICON_Axis, MSG_TRAM_BL, onDrawMenuItem, []{ (void)tram(3); });
       #if ENABLED(BED_TRAMMING_INCLUDE_CENTER)
-        MENU_ITEM(ICON_Axis, MSG_TRAM_C, onDrawMenuItem, TramC);
+        MENU_ITEM(ICON_Axis, MSG_TRAM_C, onDrawMenuItem, []{ (void)tram(4); });
       #endif
     }
     UpdateMenu(TrammingMenu);
