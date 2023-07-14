@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -23,11 +23,13 @@
 
 #include "env_validate.h"
 
+#define BOARD_INFO_NAME   "BTT OCTOPUS PRO V1.1"
+
 #define HAS_OTG_USB_HOST_SUPPORT                  // USB Flash Drive support
 #define USES_DIAG_JUMPERS
 
 // Onboard I2C EEPROM
-#if EITHER(NO_EEPROM_SELECTED, I2C_EEPROM)
+#if ANY(NO_EEPROM_SELECTED, I2C_EEPROM)
   #undef NO_EEPROM_SELECTED
   #define I2C_EEPROM
   #define MARLIN_EEPROM_SIZE              0x1000  // 4K (AT24C32)
@@ -66,7 +68,7 @@
   #else
     #define X_MIN_PIN                E0_DIAG_PIN  // E0DET
   #endif
-#elif EITHER(DUAL_X_CARRIAGE, NEEDS_X_MINMAX)
+#elif NEEDS_X_MINMAX
   #ifndef X_MIN_PIN
     #define X_MIN_PIN                 X_DIAG_PIN  // X-STOP
   #endif
@@ -84,7 +86,7 @@
   #else
     #define Y_MIN_PIN                E1_DIAG_PIN  // E1DET
   #endif
-#elif ENABLED(NEEDS_Y_MINMAX)
+#elif NEEDS_Y_MINMAX
   #ifndef Y_MIN_PIN
     #define Y_MIN_PIN                 Y_DIAG_PIN  // Y-STOP
   #endif
@@ -102,7 +104,7 @@
   #else
     #define Z_MIN_PIN                E2_DIAG_PIN  // PWRDET
   #endif
-#elif ENABLED(NEEDS_Z_MINMAX)
+#elif NEEDS_Z_MINMAX
   #ifndef Z_MIN_PIN
     #define Z_MIN_PIN                 Z_DIAG_PIN  // Z-STOP
   #endif
@@ -117,7 +119,11 @@
 // Z Probe (when not Z_MIN_PIN)
 //
 #ifndef Z_MIN_PROBE_PIN
-  #define Z_MIN_PROBE_PIN                   PB7
+  #if DISABLED(BLTOUCH)
+    #define Z_MIN_PROBE_PIN                 PC5   // Probe (Proximity switch) port
+  #else
+    #define Z_MIN_PROBE_PIN                 PB7
+  #endif
 #endif
 
 //
@@ -173,7 +179,7 @@
 
 #define Z2_STEP_PIN                         PG4   // MOTOR 3
 #define Z2_DIR_PIN                          PC1
-#define Z2_ENABLE_PIN                       PA0
+#define Z2_ENABLE_PIN                       PA2
 #ifndef Z2_CS_PIN
   #define Z2_CS_PIN                         PC7
 #endif
@@ -215,16 +221,27 @@
 #define TEMP_2_PIN                          PF6   // TH2
 #define TEMP_3_PIN                          PF7   // TH3
 
+#if TEMP_SENSOR_0 == -5
+  #define TEMP_0_CS_PIN                     PF8   // Max31865 CS
+  #define TEMP_0_SCK_PIN                    PA5
+  #define TEMP_0_MISO_PIN                   PA6
+  #define TEMP_0_MOSI_PIN                   PA7
+  #define SOFTWARE_SPI                            // Max31865 and LCD SD share a set of SPIs, Set SD to softwareSPI for Max31865
+  #define FORCE_SOFT_SPI
+#else
+  #define TEMP_0_PIN                        PF4   // TH0
+#endif
+
 //
 // Heaters / Fans
 //
 #define HEATER_BED_PIN                      PA1   // Hotbed
-#define HEATER_0_PIN                        PA2   // Heater0
+#define HEATER_0_PIN                        PA0   // Heater0
 #define HEATER_1_PIN                        PA3   // Heater1
-#define HEATER_2_PIN                        PB10  // Heater2
+#define HEATER_2_PIN                        PB0   // Heater2
 #define HEATER_3_PIN                        PB11  // Heater3
 
-#define FAN_PIN                             PA8   // Fan0
+#define FAN0_PIN                            PA8   // Fan0
 #define FAN1_PIN                            PE5   // Fan1
 #define FAN2_PIN                            PD12  // Fan2
 #define FAN3_PIN                            PD13  // Fan3
@@ -337,11 +354,11 @@
 // Must use soft SPI because Marlin's default hardware SPI is tied to LCD's EXP2
 //
 #if SD_CONNECTION_IS(ONBOARD)
-  #define SDIO_SUPPORT                            // Use SDIO for onboard SD
+  #define ONBOARD_SDIO                            // Use SDIO for onboard SD
   #ifndef SD_DETECT_STATE
     #define SD_DETECT_STATE HIGH
   #elif SD_DETECT_STATE == LOW
-    #error "BOARD_BTT_OCTOPUS_V1_0 onboard SD requires SD_DETECT_STATE set to HIGH."
+    #error "BOARD_BTT_OCTOPUS_V1_1 onboard SD requires SD_DETECT_STATE set to HIGH."
   #endif
   #define SD_DETECT_PIN                     PC14
 #elif SD_CONNECTION_IS(LCD)
@@ -449,7 +466,7 @@
     #define BTN_EN1                  EXP1_03_PIN
     #define BTN_EN2                  EXP1_05_PIN
 
-    #define LCD_PINS_ENABLE          EXP1_08_PIN
+    #define LCD_PINS_EN              EXP1_08_PIN
     #define LCD_PINS_D4              EXP1_06_PIN
 
   #else
@@ -459,7 +476,7 @@
     #define BTN_EN1                  EXP2_03_PIN
     #define BTN_EN2                  EXP2_05_PIN
 
-    #define LCD_PINS_ENABLE          EXP1_03_PIN
+    #define LCD_PINS_EN              EXP1_03_PIN
     #define LCD_PINS_D4              EXP1_05_PIN
 
     #if ENABLED(FYSETC_MINI_12864)
@@ -467,7 +484,7 @@
       #define DOGLCD_A0              EXP1_04_PIN
       //#define LCD_BACKLIGHT_PIN           -1
       #define LCD_RESET_PIN          EXP1_05_PIN  // Must be high or open for LCD to operate normally.
-      #if EITHER(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
+      #if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
         #ifndef RGB_LED_R_PIN
           #define RGB_LED_R_PIN      EXP1_06_PIN
         #endif
@@ -525,7 +542,7 @@
 // NeoPixel LED
 //
 #ifndef NEOPIXEL_PIN
-  #define NEOPIXEL_PIN                      PB0
+  #define NEOPIXEL_PIN                      PB10
 #endif
 
 #if ENABLED(WIFISUPPORT)
