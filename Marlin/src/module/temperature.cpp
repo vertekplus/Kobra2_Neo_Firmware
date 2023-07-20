@@ -160,10 +160,6 @@
   #include "stepper.h"
 #endif
 
-#if ENABLED(BABYSTEPPING) && DISABLED(INTEGRATED_BABYSTEPPING)
-  #include "../feature/babystep.h"
-#endif
-
 #if ENABLED(FILAMENT_WIDTH_SENSOR)
   #include "../feature/filwidth.h"
 #endif
@@ -4132,10 +4128,6 @@ void Temperature::isr() {
   //
   // Additional ~1kHz Tasks
   //
-
-  #if ENABLED(BABYSTEPPING) && DISABLED(INTEGRATED_BABYSTEPPING)
-    babystep.task();
-  #endif
 
   // Check fan tachometers
   TERN_(HAS_FANCHECK, fan_check.update_tachometers());
