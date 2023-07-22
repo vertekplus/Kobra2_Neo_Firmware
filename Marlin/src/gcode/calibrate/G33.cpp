@@ -655,7 +655,7 @@ void GcodeSuite::G33() {
         SERIAL_ECHOLNPGM("Save with M500 and/or copy to Configuration.h");
       }
       else { // !end iterations
-        char mess[15];
+        SString<15> msg;
         if (iterations < 31)
           sprintf_P(mess, PSTR("Iteration : %02i"), (unsigned int)iterations);
         else
