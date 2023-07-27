@@ -49,16 +49,18 @@ void HotendIdleProtection::check_hotends(const millis_t &ms) {
       do_prot = true; break;
     }
   }
-  if (bool(next_protect_ms) != do_prot)
-    next_protect_ms = do_prot ? ms + hp_interval : 0;
+  if (!do_prot)
+    next_protect_ms = 0;                          // No hotends are hot so cancel timeout
+  else if (!next_protect_ms)                      // Timeout is possible?
+    next_protect_ms = ms + 1000UL * cfg.timeout;  // Start timeout if not already set
 }
 
 void HotendIdleProtection::check_e_motion(const millis_t &ms) {
   static float old_e_position = 0;
   if (old_e_position != current_position.e) {
-    old_e_position = current_position.e;          // Track filament motion
-    if (next_protect_ms)                          // If some heater is on then...
-      next_protect_ms = ms + hp_interval;         // ...delay the timeout till later
+    old_e_position = current_position.e;            // Track filament motion
+    if (next_protect_ms)                            // If some heater is on then...
+      next_protect_ms = ms + 1000UL * cfg.timeout;  // ...delay the timeout till later
   }
 }
 
