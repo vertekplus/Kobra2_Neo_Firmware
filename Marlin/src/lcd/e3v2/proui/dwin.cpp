@@ -3435,24 +3435,26 @@ void Draw_Motion_Menu() {
   UpdateMenu(MotionMenu);
 }
 
-#if HAS_PREHEAT
-  void Draw_PreheatHotend_Menu() {
-    checkkey = Menu;
-    if (SET_MENU(PreheatHotendMenu, MSG_PREHEAT_HOTEND, 1 + PREHEAT_COUNT)) {
-      BACK_ITEM(Draw_FilamentMan_Menu);
-      #define _ITEM_PREHEAT_HE(N) MENU_ITEM(ICON_Preheat##N, MSG_PREHEAT_##N, onDrawMenuItem, DoPreheatHotend##N);
-      REPEAT_1(PREHEAT_COUNT, _ITEM_PREHEAT_HE)
-    }
-    UpdateMenu(PreheatHotendMenu);
-  }
-#endif
-
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
 
-  void Draw_FilamentMan_Menu() {
-    checkkey = Menu;
-    if (SET_MENU(FilamentMenu, MSG_FILAMENT_MAN, 6)) {
-      BACK_ITEM(Draw_Prepare_Menu);
+  #if HAS_PREHEAT
+
+    void drawPreheatHotendMenu() {
+      checkkey = ID_Menu;
+      if (SET_MENU(preheatHotendMenu, MSG_PREHEAT_HOTEND, 1 + PREHEAT_COUNT)) {
+        BACK_ITEM(drawFilamentManMenu);
+        #define _ITEM_PREHEAT_HE(N) MENU_ITEM(ICON_Preheat##N, MSG_PREHEAT_##N, onDrawMenuItem, DoPreheatHotend##N);
+        REPEAT_1(PREHEAT_COUNT, _ITEM_PREHEAT_HE)
+      }
+      updateMenu(preheatHotendMenu);
+    }
+
+  #endif
+
+  void drawFilamentManMenu() {
+    checkkey = ID_Menu;
+    if (SET_MENU(filamentMenu, MSG_FILAMENT_MAN, 6)) {
+      BACK_ITEM(drawPrepareMenu);
       #if ENABLED(NOZZLE_PARK_FEATURE)
         MENU_ITEM(ICON_Park, MSG_FILAMENT_PARK_ENABLED, onDrawMenuItem, ParkHead);
       #endif
