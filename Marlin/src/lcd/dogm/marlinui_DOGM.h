@@ -36,13 +36,15 @@
 
   // RepRapWorld Graphical LCD
 
-
-  #if DISABLED(SDSUPPORT) && (LCD_PINS_D4 == SD_SCK_PIN) && (LCD_PINS_ENABLE == SD_MOSI_PIN)
-    #define U8G_CLASS U8GLIB_ST7920_128X64_4X_HAL
+  #if HAS_MEDIA
+    #ifdef __SAMD21__
+      #define U8G_CLASS U8GLIB_ST7920_128X64_4X_HAL
+    #else
+      #define U8G_CLASS U8GLIB_ST7920_128X64_4X
+    #endif
     #define U8G_PARAM LCD_PINS_RS
-  #elif ENABLED(SDSUPPORT) && __SAMD21__
-
-    #define U8G_CLASS U8GLIB_ST7920_128X64_4X
+  #elif (LCD_PINS_D4 == SD_SCK_PIN) && (LCD_PINS_EN == SD_MOSI_PIN)
+    #define U8G_CLASS U8GLIB_ST7920_128X64_4X_HAL
     #define U8G_PARAM LCD_PINS_RS
   #else
     #define U8G_CLASS U8GLIB_ST7920_128X64_4X
@@ -63,7 +65,7 @@
     #else
       #define U8G_CLASS U8GLIB_ST7920_128X64_RRD                // Adjust stripes with PAGE_HEIGHT in ultralcd_st7920_u8glib_rrd.h
     #endif
-    #define U8G_PARAM LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS // AVR version ignores these pin settings
+    #define U8G_PARAM LCD_PINS_D4, LCD_PINS_EN, LCD_PINS_RS     // AVR version ignores these pin settings
                                                                 // HAL version uses these pin settings
   #endif
 
