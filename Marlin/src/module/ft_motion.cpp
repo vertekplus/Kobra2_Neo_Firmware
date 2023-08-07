@@ -317,7 +317,9 @@ void FxdTiCtrl::loop() {
   // To be called on init or mode or zeta change.
   void FxdTiCtrl::updateShapingA(const_float_t zeta/*=FTM_SHAPING_ZETA*/, const_float_t vtol/*=FTM_SHAPING_V_TOL*/) {
 
-    const float K = exp( -zeta * M_PI / sqrt(1.0f - sq(zeta)) ),
+  void FxdTiCtrl::Shaping::updateShapingA(const_float_t zeta/*=cfg.zeta*/, const_float_t vtol/*=cfg.vtol*/) {
+
+    const float K = exp(-zeta * M_PI / sqrt(1.0f - sq(zeta))),
                 K2 = sq(K);
 
     switch (cfg.mode) {
@@ -384,6 +386,10 @@ void FxdTiCtrl::loop() {
     #endif
   }
 
+  void FxdTiCtrl::updateShapingA(const_float_t zeta/*=cfg.zeta*/, const_float_t vtol/*=cfg.vtol*/) {
+    shaping.updateShapingA(zeta, vtol);
+  }
+
   // Refresh the indices used by shaping functions.
   // To be called when frequencies change.
   void FxdTiCtrl::updateShapingN(const_float_t xf OPTARG(HAS_Y_AXIS, const_float_t yf), const_float_t zeta/*=FTM_SHAPING_ZETA*/) {
@@ -441,6 +447,12 @@ void FxdTiCtrl::loop() {
       default:
         for (uint32_t i = 0U; i < 5U; i++) { x_Ni[i] = 0; TERN_(HAS_Y_AXIS, y_Ni[i] = 0); }
     }
+  }
+
+  void FxdTiCtrl::updateShapingN(const_float_t xf OPTARG(HAS_Y_AXIS, const_float_t yf), const_float_t zeta/*=cfg.zeta*/) {
+    const float df = sqrt(1.0f - sq(zeta));
+    shaping.x.updateShapingN(xf, df);
+    TERN_(HAS_Y_AXIS, shaping.y.updateShapingN(yf, df));
   }
 
 #endif // HAS_X_AXIS
