@@ -35,6 +35,9 @@
 #include "../common/encoder.h"
 #include "../common/limits.h"
 #include "../../../libs/BL24CXX.h"
+#if ENABLED(LED_CONTROL_MENU)
+  #include "../../../feature/leds/leds.h"
+#endif
 
 #if EITHER(BABYSTEPPING, HAS_BED_PROBE)
   #define HAS_ZOFFSET_ITEM 1

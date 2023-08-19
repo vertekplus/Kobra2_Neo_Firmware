@@ -68,8 +68,8 @@
 #if BOTH(LED_CONTROL_MENU, HAS_COLOR_LEDS)
   #define Def_Leds_Color      LEDColorWhite()
 #endif
-#if ENABLED(CASELIGHT_USES_BRIGHTNESS)
-  #define Def_CaseLight_Brightness 255
+#if CASELIGHT_USES_BRIGHTNESS
+  #define defCaseLightBrightness 255
 #endif
 #ifdef Z_AFTER_HOMING
   #define DEF_Z_AFTER_HOMING Z_AFTER_HOMING

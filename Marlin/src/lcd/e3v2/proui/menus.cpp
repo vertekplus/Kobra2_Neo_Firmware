@@ -505,27 +505,27 @@ void InitMenu() {
   PreviousMenu = nullptr;
 }
 
-bool SetMenu(MenuClass* &menu, FSTR_P title, int8_t totalitems) {
-  if (!menu) menu = new MenuClass();
-  const bool NotCurrent = (CurrentMenu != menu);
-  if (NotCurrent) {
-    menu->MenuTitle.SetCaption(title);
-    MenuItemsPrepare(totalitems);
+bool setMenu(Menu* &menu, FSTR_P fTitle, int8_t totalitems) {
+  if (!menu) menu = new Menu();
+  const bool notCurrent = (currentMenu != menu);
+  if (notCurrent) {
+    menu->menuTitle.setCaption(fTitle);
+    menuItemsPrepare(totalitems);
   }
-  return NotCurrent;
+  return notCurrent;
 }
 
-bool SetMenu(MenuClass* &menu, frame_rect_t cn, FSTR_P title, int8_t totalitems) {
-  if (!menu) menu = new MenuClass();
-  const bool NotCurrent = (CurrentMenu != menu);
-  if (NotCurrent) {
+bool setMenu(Menu* &menu, frame_rect_t cn, FSTR_P fTitle, int8_t totalitems) {
+  if (!menu) menu = new Menu();
+  const bool notCurrent = (currentMenu != menu);
+  if (notCurrent) {
     if (cn.w != 0)
       menu->MenuTitle.SetFrame(cn.x, cn.y, cn.w, cn.h);
     else
       menu->MenuTitle.SetCaption(title);
     MenuItemsPrepare(totalitems);
   }
-  return NotCurrent;
+  return notCurrent;
 }
 
 void ResetMenu(MenuClass* &menu) {
