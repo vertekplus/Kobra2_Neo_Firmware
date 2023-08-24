@@ -289,9 +289,9 @@ MenuItemClass *FanSpeedItem = nullptr;
 MenuItemClass *MMeshMoveZItem = nullptr;
 MenuItemClass *EditZValueItem = nullptr;
 
-bool Printing() { return printingIsActive() || printingIsPaused(); }
-bool SD_Printing() { return Printing() && IS_SD_FILE_OPEN(); }
-bool Host_Printing() { return Printing() && !IS_SD_FILE_OPEN(); }
+bool isPrinting() { return printingIsActive() || printingIsPaused(); }
+bool sdPrinting() { return isPrinting() && IS_SD_FILE_OPEN(); }
+bool hostPrinting() { return isPrinting() && !IS_SD_FILE_OPEN(); }
 
 #define DWIN_LANGUAGE_EEPROM_ADDRESS 0x01   // Between 0x01 and 0x63 (EEPROM_OFFSET-1)
                                             // BL24CXX::check() uses 0x00
@@ -636,10 +636,10 @@ void Draw_PrintDone() {
   DWINUI::ClearMainArea();
   DWIN_Print_Header(nullptr);
   #if HAS_GCODE_PREVIEW
-    const bool haspreview = Preview_Valid();
+    const bool haspreview = preview.valid();
     if (haspreview) {
-      Preview_Show();
-      DWINUI::Draw_Button(BTN_Continue, 86, 295);
+      preview.show();
+      DWINUI::drawButton(BTN_Continue, 86, 295);
     }
   #else
     constexpr bool haspreview = false;
@@ -1671,8 +1671,8 @@ void DWIN_LevelingDone() {
 #endif // MPC_AUTOTUNE
 
 // Started a Print Job
-void DWIN_Print_Started() {
-  TERN_(HAS_GCODE_PREVIEW, if (Host_Printing()) Preview_Invalidate());
+void dwinPrintStarted() {
+  TERN_(HAS_GCODE_PREVIEW, if (hostPrinting()) preview.invalidate());
   TERN_(SET_PROGRESS_PERCENT, ui.progress_reset());
   TERN_(SET_REMAINING_TIME, ui.reset_remaining_time());
   hmiFlag.pause_flag = false;
@@ -1957,7 +1957,7 @@ void DWIN_RedrawScreen() {
 
 void Goto_ConfirmToPrint() {
   #if HAS_GCODE_PREVIEW
-    if (HMI_data.EnablePreview) return Goto_Popup(Preview_DrawFromSD, onClick_ConfirmToPrint);
+    if (hmiData.enablePreview) return gotoPopup(preview.drawFromSD, onClickConfirmToPrint);
   #endif
   card.openAndPrintFile(card.filename); // Direct print SD file
 }
