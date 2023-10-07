@@ -4525,7 +4525,7 @@ void CrealityDWINClass::Print_Screen_Control() {
               #endif
               TERN_(HAS_FAN, thermalManager.fan_speed[0] = pausefan);
               planner.synchronize();
-              TERN_(SDSUPPORT, queue.inject(F("M24")));
+              TERN_(HAS_MEDIA, queue.inject(FPSTR(M24_STR)));
             #endif
           }
           else {
