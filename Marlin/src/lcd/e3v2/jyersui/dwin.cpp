@@ -4223,27 +4223,27 @@ uint8_t CrealityDWINClass::Get_Menu_Size(const uint8_t menu) {
 void CrealityDWINClass::Popup_Handler(const PopupID popupid, const bool option/*=false*/) {
   popup = last_popup = popupid;
   switch (popupid) {
-    case Pause:         drawPopup(F("Pause Print"), F(""), F(""), Popup); break;
-    case Stop:          drawPopup(F("Stop Print"), F(""), F(""), Popup); break;
-    case Resume:        drawPopup(F("Resume Print?"), F("Looks Like the last"), F("print was interrupted."), Popup); break;
-    case ConfFilChange: drawPopup(F("Confirm Filament Change"), F(""), F(""), Popup); break;
-    case PurgeMore:     drawPopup(F("Purge more filament?"), F("(Cancel to finish process)"), F(""), Popup); break;
-    case SaveLevel:     drawPopup(F("Leveling Complete"), F("Save to EEPROM?"), F(""), Popup); break;
-    case MeshSlot:      drawPopup(F("Mesh slot not selected"), F("(Confirm to select slot 0)"), F(""), Popup); break;
-    case ETemp:         drawPopup(F("Nozzle is too cold"), F("Open Preheat Menu?"), F(""), Popup); break;
-    case ManualProbing: drawPopup(F("Manual Probing"), F("(Confirm to probe)"), F("(cancel to exit)"), Popup); break;
-    case Level:         drawPopup(F("Auto Bed Leveling"), F("Please wait until done."), F(""), Wait, ICON_AutoLeveling); break;
-    case Home:          drawPopup(option ? F("Parking") : F("Homing"), F("Please wait until done."), F(""), Wait, ICON_BLTouch); break;
-    case MoveWait:      drawPopup(F("Moving to Point"), F("Please wait until done."), F(""), Wait, ICON_BLTouch); break;
-    case Heating:       drawPopup(F("Heating"), F("Please wait until done."), F(""), Wait, ICON_BLTouch); break;
-    case FilLoad:       drawPopup(option ? F("Unloading Filament") : F("Loading Filament"), F("Please wait until done."), F(""), Wait, ICON_BLTouch); break;
-    case FilChange:     drawPopup(F("Filament Change"), F("Please wait for prompt."), F(""), Wait, ICON_BLTouch); break;
-    case TempWarn:      drawPopup(option ? F("Nozzle temp too low!") : F("Nozzle temp too high!"), F(""), F(""), Wait, option ? ICON_TempTooLow : ICON_TempTooHigh); break;
-    case Runout:        drawPopup(F("Filament Runout"), F(""), F(""), Wait, ICON_BLTouch); break;
-    case PIDWait:       drawPopup(F("PID Autotune"), F("in process"), F("Please wait until done."), Wait, ICON_BLTouch); break;
-    case MPCWait:       drawPopup(F("MPC Autotune"), F("in process"), F("Please wait until done."), Wait, ICON_BLTouch); break;
-    case Resuming:      drawPopup(F("Resuming Print"), F("Please wait until done."), F(""), Wait, ICON_BLTouch); break;
-    case Custom:        drawPopup(F("Running Custom GCode"), F("Please wait until done."), F(""), Wait, ICON_BLTouch); break;
+    case Popup_Pause:         drawPopup(F("Pause Print"), F(""), F(""), Proc_Popup); break;
+    case Popup_Stop:          drawPopup(F("Stop Print"), F(""), F(""), Proc_Popup); break;
+    case Popup_Resume:        drawPopup(F("Resume Print?"), F("Looks Like the last"), F("print was interrupted."), Proc_Popup); break;
+    case Popup_ConfFilChange: drawPopup(F("Confirm Filament Change"), F(""), F(""), Proc_Popup); break;
+    case Popup_PurgeMore:     drawPopup(F("Purge more filament?"), F("(Cancel to finish process)"), F(""), Proc_Popup); break;
+    case Popup_SaveLevel:     drawPopup(F("Leveling Complete"), F("Save to EEPROM?"), F(""), Proc_Popup); break;
+    case Popup_MeshSlot:      drawPopup(F("Mesh slot not selected"), F("(Confirm to select slot 0)"), F(""), Proc_Popup); break;
+    case Popup_ETemp:         drawPopup(F("Nozzle is too cold"), F("Open Preheat Menu?"), F(""), Proc_Popup); break;
+    case Popup_ManualProbing: drawPopup(F("Manual Probing"), F("(Confirm to probe)"), F("(cancel to exit)"), Proc_Popup); break;
+    case Popup_Level:         drawPopup(F("Auto Bed Leveling"), F("Please wait until done."), F(""), Proc_Wait, ICON_AutoLeveling); break;
+    case Popup_Home:          drawPopup(option ? F("Parking") : F("Homing"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_MoveWait:      drawPopup(F("Moving to Point"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_Heating:       drawPopup(F("Heating"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_FilLoad:       drawPopup(option ? F("Unloading Filament") : F("Loading Filament"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_FilChange:     drawPopup(F("Filament Change"), F("Please wait for prompt."), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_TempWarn:      drawPopup(option ? F("Nozzle temp too low!") : F("Nozzle temp too high!"), F(""), F(""), Proc_Wait, option ? ICON_TempTooLow : ICON_TempTooHigh); break;
+    case Popup_Runout:        drawPopup(F("Filament Runout"), F(""), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_PIDWait:       drawPopup(F("PID Autotune"), F("in process"), F("Please wait until done."), Proc_Wait, ICON_BLTouch); break;
+    case Popup_MPCWait:       drawPopup(F("MPC Autotune"), F("in process"), F("Please wait until done."), Proc_Wait, ICON_BLTouch); break;
+    case Popup_Resuming:      drawPopup(F("Resuming Print"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_Custom:        drawPopup(F("Running Custom G-Code"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
     default: break;
   }
 }
