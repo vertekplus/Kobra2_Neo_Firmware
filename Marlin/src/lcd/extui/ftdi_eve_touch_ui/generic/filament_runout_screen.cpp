@@ -1,6 +1,6 @@
-/*********************
- * language_menu.cpp *
- *********************/
+/******************************
+ * filament_runout_screen.cpp *
+ ******************************/
 
 /****************************************************************************
  *   Written By Mark Pelletier  2017 - Aleph Objects, Inc.                  *
@@ -23,46 +23,44 @@
 #include "../config.h"
 #include "../screens.h"
 
-#ifdef FTDI_LANGUAGE_MENU
-
-#include "../language/language.h"
+#ifdef FTDI_FILAMENT_RUNOUT_SCREEN
 
 using namespace FTDI;
+using namespace ExtUI;
 using namespace Theme;
 
-void LanguageMenu::onRedraw(draw_mode_t) {
-  CommandProcessor cmd;
-  cmd.cmd(CLEAR_COLOR_RGB(Theme::bg_color))
-     .cmd(CLEAR(true,true,true))
-     .colors(normal_btn)
-     .font(Theme::font_medium);
+void FilamentRunoutScreen::onRedraw(draw_mode_t what) {
+  widgets_t w(what);
+  w.heading(   GET_TEXT_F(MSG_FILAMENT));
+  w.toggle( 2, GET_TEXT_F(MSG_RUNOUT_SENSOR), getFilamentRunoutEnabled());
 
-  #define GRID_COLS 1
-  #define GRID_ROWS 8
-
-  cmd.tag(1).button(BTN_POS(1,1), BTN_SIZE(1,1), GET_LANGUAGE_NAME(1));
-  cmd.tag(2).button(BTN_POS(1,2), BTN_SIZE(1,1), GET_LANGUAGE_NAME(2));
-  #if NUM_LANGUAGES > 2
-    cmd.tag(3).button(BTN_POS(1,3), BTN_SIZE(1,1), GET_LANGUAGE_NAME(3));
-    #if NUM_LANGUAGES > 3
-      cmd.tag(4).button(BTN_POS(1,4), BTN_SIZE(1,1), GET_LANGUAGE_NAME(4));
-      #if NUM_LANGUAGES > 5
-        cmd.tag(5).button(BTN_POS(1,5), BTN_SIZE(1,1), GET_LANGUAGE_NAME(5));
-      #endif
-    #endif
+  #if HAS_FILAMENT_RUNOUT_DISTANCE
+    w.heading(GET_TEXT_F(MSG_RUNOUT_DISTANCE_MM));
+    w.units(GET_TEXT_F(MSG_UNITS_MM));
+    w.precision(0);
+    w.color(e_axis);
+    w.adjuster( 10, FPSTR(NUL_STR), getFilamentRunoutDistance_mm(), getFilamentRunoutEnabled());
+    w.increments();
   #endif
 }
 
-extern uint8_t ftdi_language;
-
-bool LanguageMenu::onTouchEnd(uint8_t tag) {
-
-  if (tag > 0 && tag <= NUM_LANGUAGES) {
-    ftdi_language = tag - 1;
-    GOTO_SCREEN(StatusScreen);
-    return true;
+bool FilamentRunoutScreen::onTouchHeld(uint8_t tag) {
+  using namespace ExtUI;
+  #if HAS_FILAMENT_RUNOUT_DISTANCE
+    const float increment = getIncrement();
+  #endif
+  switch (tag) {
+    case 2: setFilamentRunoutEnabled(!getFilamentRunoutEnabled()); break;
+    #if HAS_FILAMENT_RUNOUT_DISTANCE
+      case  10: UI_DECREMENT(FilamentRunoutDistance_mm); break;
+      case  11: UI_INCREMENT(FilamentRunoutDistance_mm); break;
+    #endif
+    default:
+      return false;
   }
-  return false;
+
+  SaveSettingsDialogBox::settingsChanged();
+  return true;
 }
 
-#endif // FTDI_LANGUAGE_MENU
+#endif // FTDI_FILAMENT_RUNOUT_SCREEN
