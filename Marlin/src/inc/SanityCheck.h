@@ -4123,8 +4123,8 @@ static_assert(_PLUS_TEST(4), "HOMING_FEEDRATE_MM_M values must be positive.");
   #error "CNC_COORDINATE_SYSTEMS is incompatible with NO_WORKSPACE_OFFSETS."
 #endif
 
-#if !BLOCK_BUFFER_SIZE || !IS_POWER_OF_2(BLOCK_BUFFER_SIZE)
-  #error "BLOCK_BUFFER_SIZE must be a power of 2."
+#if !BLOCK_BUFFER_SIZE
+  #error "BLOCK_BUFFER_SIZE must be non-zero."
 #elif BLOCK_BUFFER_SIZE > 64
   #error "A very large BLOCK_BUFFER_SIZE is not needed and takes longer to drain the buffer on pause / cancel."
 #endif
