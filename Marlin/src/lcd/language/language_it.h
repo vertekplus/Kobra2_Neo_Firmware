@@ -895,3 +895,46 @@ namespace Language_it {
   LSTR DGUS_MSG_FILAMENT_RUNOUT           = _UxGT("Filament runout E%d");
 
 }
+
+namespace LanguageWide_it {
+  using namespace LanguageNarrow_it;
+  #if LCD_WIDTH >= 20 || HAS_DWIN_E3V2
+    LSTR MSG_HOST_START_PRINT             = _UxGT("Avvio stampa host");
+    LSTR MSG_PRINTING_OBJECT              = _UxGT("Sto stampando l'oggetto");
+    LSTR MSG_CANCEL_OBJECT                = _UxGT("Cancella l'oggetto");
+    LSTR MSG_CANCEL_OBJECT_N              = _UxGT("Cancella l'oggetto {");
+    LSTR MSG_CONTINUE_PRINT_JOB           = _UxGT("Continua il Job di stampa");
+    LSTR MSG_MEDIA_MENU                   = _UxGT("Selez.da supporto");
+    LSTR MSG_TURN_OFF                     = _UxGT("Spegni la stampante");
+    LSTR MSG_END_LOOPS                    = _UxGT("Termina i cicli di ripetizione");
+    LSTR MSG_MEDIA_NOT_INSERTED           = _UxGT("Nessun supporto inserito.");
+    LSTR MSG_PLEASE_PREHEAT               = _UxGT("Si prega di preriscaldare l'hot end.");
+    LSTR MSG_INFO_PRINT_COUNT_RESET       = _UxGT("Azzera i contatori di stampa");
+    LSTR MSG_INFO_PRINT_COUNT             = _UxGT("Contatori di stampa");
+    LSTR MSG_INFO_PRINT_TIME              = _UxGT("Tempo totale");
+    LSTR MSG_INFO_PRINT_LONGEST           = _UxGT("Lavoro più lungo");
+    LSTR MSG_INFO_PRINT_FILAMENT          = _UxGT("Totale estruso");
+  #endif
+}
+
+namespace LanguageTall_it {
+  using namespace LanguageWide_it;
+  #if LCD_HEIGHT >= 4
+    // Filament Change screens show up to 3 lines on a 4-line display
+    LSTR MSG_ADVANCED_PAUSE_WAITING       = _UxGT(MSG_3_LINE("Premi per", "riprendere", "la stampa"));
+    LSTR MSG_PAUSE_PRINT_PARKING          = _UxGT(MSG_1_LINE("Sto parcheggiando..."));
+    LSTR MSG_FILAMENT_CHANGE_INIT         = _UxGT(MSG_3_LINE("Attendere avvio", "del cambio", "di filamento"));
+    LSTR MSG_FILAMENT_CHANGE_INSERT       = _UxGT(MSG_3_LINE("Inserisci il", "filamento e premi", "per continuare"));
+    LSTR MSG_FILAMENT_CHANGE_HEAT         = _UxGT(MSG_2_LINE("Premi per", "riscaldare ugello"));
+    LSTR MSG_FILAMENT_CHANGE_HEATING      = _UxGT(MSG_2_LINE("Riscaldam. ugello", "Attendere prego..."));
+    LSTR MSG_FILAMENT_CHANGE_UNLOAD       = _UxGT(MSG_3_LINE("Attendere", "l'espulsione", "del filamento"));
+    LSTR MSG_FILAMENT_CHANGE_LOAD         = _UxGT(MSG_3_LINE("Attendere", "il caricamento", "del filamento"));
+    LSTR MSG_FILAMENT_CHANGE_PURGE        = _UxGT(MSG_3_LINE("Attendere", "lo spurgo", "del filamento"));
+    LSTR MSG_FILAMENT_CHANGE_CONT_PURGE   = _UxGT(MSG_3_LINE("Premi x terminare", "lo spurgo", "del filamento"));
+    LSTR MSG_FILAMENT_CHANGE_RESUME       = _UxGT(MSG_3_LINE("Attendere", "la ripresa", "della stampa..."));
+  #endif
+}
+
+namespace Language_it {
+  using namespace LanguageTall_it;
+}
