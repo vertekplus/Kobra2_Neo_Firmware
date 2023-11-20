@@ -75,6 +75,6 @@ public:
     static SPIClass SPIx;
   #endif
 
-  static void Init();
-  static bool getRawPoint(int16_t *x, int16_t *y);
+  static void init();
+  static bool getRawPoint(int16_t * const x, int16_t * const y);
 };

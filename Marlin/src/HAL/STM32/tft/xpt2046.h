@@ -76,6 +76,6 @@ private:
   static uint16_t IO(uint16_t data = 0) { return SPIx.Instance ? HardwareIO(data) : SoftwareIO(data); }
 
 public:
-  static void Init();
-  static bool getRawPoint(int16_t *x, int16_t *y);
+  static void init();
+  static bool getRawPoint(int16_t * const x, int16_t * const y);
 };

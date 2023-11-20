@@ -408,19 +408,19 @@ private:
 
         // Draw value text on
         if (viewer_print_value) {
-          int8_t offset_x, offset_y = cell_height_px / 2 - 6;
+          xy_int8_t offset { 0, cell_height_px / 2 - 6 };
           if (isnan(bedlevel.z_values[x][y])) {  // undefined
-            DWIN_Draw_String(false, font6x12, Color_White, Color_Bg_Blue, start_x_px + cell_width_px / 2 - 5, start_y_px + offset_y, F("X"));
+            dwinDrawString(false, font6x12, COLOR_WHITE, COLOR_BG_BLUE, start_x_px + cell_width_px / 2 - 5, start_y_px + offset.y, F("X"));
           }
           else {                          // has value
             if (GRID_MAX_POINTS_X < 10)
               sprintf_P(buf, PSTR("%s"), dtostrf(abs(bedlevel.z_values[x][y]), 1, 2, str_1));
             else
-              sprintf_P(buf, PSTR("%02i"), (uint16_t)(abs(bedlevel.z_values[x][y] - (int16_t)bedlevel.z_values[x][y]) * 100));
-            offset_x = cell_width_px / 2 - 3 * (strlen(buf)) - 2;
-            if (!(GRID_MAX_POINTS_X < 10))
-              DWIN_Draw_String(false, font6x12, Color_White, Color_Bg_Blue, start_x_px - 2 + offset_x, start_y_px + offset_y /*+ square / 2 - 6*/, F("."));
-            DWIN_Draw_String(false, font6x12, Color_White, Color_Bg_Blue, start_x_px + 1 + offset_x, start_y_px + offset_y /*+ square / 2 - 6*/, buf);
+              msg.setf(F("%02i"), uint16_t(abs(bedlevel.z_values[x][y] - int16_t(bedlevel.z_values[x][y])) * 100));
+            offset.x = cell_width_px / 2 - 3 * msg.length() - 2;
+            if (GRID_MAX_POINTS_X >= 10)
+              dwinDrawString(false, font6x12, COLOR_WHITE, COLOR_BG_BLUE, start_x_px - 2 + offset.x, start_y_px + offset.y /*+ square / 2 - 6*/, F("."));
+            dwinDrawString(false, font6x12, COLOR_WHITE, COLOR_BG_BLUE, start_x_px + 1 + offset.x, start_y_px + offset.y /*+ square / 2 - 6*/, msg);
           }
           safe_delay(10);
           LCD_SERIAL.flushTX();
