@@ -329,6 +329,25 @@ void MarlinUI::draw_status_message(const bool blink) {
       // SS_CENTER: Pad with half of the unused space first
       if (center) for (int8_t lpad = pad / 2; lpad > 0; --lpad) dwin_string.add(' ');
 
+    // Value length, if any
+    int8_t vlen = vstr ? utf8_strlen(vstr) : 0;
+
+    bool mv_colon = false;
+    if (vlen && !center) {
+      // Move the leading colon from the value to the label below
+      mv_colon = (*vstr == ':');
+      // Shorter value, wider label
+      if (mv_colon) { vstr++; vlen--; plen++; }
+      // Remove leading spaces from the value and shorten
+      while (*vstr == ' ') { vstr++; vlen--; }
+    }
+
+    int8_t pad = (center || full) ? (LCD_WIDTH) - 1 - plen - vlen : 0;
+
+    // SS_CENTER: Pad with half of the unused space first
+    if (center) for (int8_t lpad = pad / 2; lpad > 0; --lpad, --pad) dwin_string.add(' ');
+
+    if (plen) {
       // Append the templated label string
       if (plen) {
         dwin_string.add(ftpl, itemIndex, itemStringC, itemStringF);
