@@ -47,10 +47,7 @@
 
 #include "../../../inc/MarlinConfigPre.h"
 
-#define UBL_Z_OFFSET_MIN -3.0
-#define UBL_Z_OFFSET_MAX  3.0
-
-class BedLevelToolsClass {
+class BedLevelTools {
 public:
   #if ENABLED(USE_GRID_MESHVIEWER)
     static bool viewer_asymmetric_range;
