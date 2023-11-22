@@ -89,11 +89,11 @@ public:
   char caption[MENU_CHAR_LIMIT] = "";
   uint8_t frameid = 0;
   rect_t frame = {0};
-  using CustomMenuItemClass::CustomMenuItemClass;
-  MenuItemClass(uint8_t cicon, const char * const text=nullptr, OnDrawItem ondraw=nullptr, OnClickItem onclick=nullptr);
-  MenuItemClass(uint8_t cicon, uint8_t id, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, OnDrawItem ondraw=nullptr, OnClickItem onclick=nullptr);
-  void SetFrame(uint8_t id, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-  void SetCaption(const char * const text = nullptr);
+  using CustomMenuItem::CustomMenuItem;
+  MenuItem(uint8_t cicon, const char * const text=nullptr, OnDrawItem ondraw=nullptr, OnClickItem onclick=nullptr);
+  MenuItem(uint8_t cicon, uint8_t id, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, OnDrawItem ondraw=nullptr, OnClickItem onclick=nullptr);
+  void setFrame(uint8_t id, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+  void setCaption(const char * const text=nullptr);
 };
 
 class MenuItemPtrClass: public MenuItemClass {

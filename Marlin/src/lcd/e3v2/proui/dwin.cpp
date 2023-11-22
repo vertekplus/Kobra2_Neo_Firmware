@@ -1711,8 +1711,20 @@ void DWIN_Print_Finished() {
 }
 
 // Print was aborted
-void DWIN_Print_Aborted() {
-  DWIN_Print_Finished();
+void dwinPrintAborted() {
+  #ifndef EVENT_GCODE_SD_ABORT
+    if (all_axes_homed()) {
+      queue.inject(
+        #if ENABLED(NOZZLE_PARK_FEATURE)
+          F("G27")
+        #else
+          TS(F("G0Z"), float(_MIN(current_position.z + (Z_POST_CLEARANCE), Z_MAX_POS)), F("\nG0F2000Y"), Y_MAX_POS);
+        #endif
+      );
+    }
+  #endif
+  hostui.notify("Print Aborted");
+  dwinPrintFinished();
 }
 
 #if HAS_FILAMENT_SENSOR
@@ -2226,7 +2238,8 @@ void SetMoveZ() { HMI_value.axis = Z_AXIS; SetPFloatOnClick(Z_MIN_POS, Z_MAX_POS
 #endif
 
 #if LCD_BACKLIGHT_TIMEOUT_MINS
-  void setTimer() { setPIntOnClick(ui.backlight_timeout_min, ui.backlight_timeout_max); }
+  void applyTimer() { ui.backlight_timeout_minutes = menuData.value; }
+  void setTimer() { setIntOnClick(ui.backlight_timeout_min, ui.backlight_timeout_max, ui.backlight_timeout_minutes, applyTimer); }
 #endif
 
 #if HAS_FILAMENT_SENSOR
