@@ -19,11 +19,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-
-/**
- * SAMD21 HAL developed by Bart Meijer (brupje)
- * Based on SAMD51 HAL by Giuliano Zaro (AKA GMagician)
- */
 #pragma once
 
 #if HAS_SPI_TFT || HAS_FSMC_TFT
