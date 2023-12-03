@@ -1660,9 +1660,33 @@ void Endstops::update() {
       #if HAS_CURRENT_HOME(Z)
         static int16_t saved_current_z;
       #endif
-      auto debug_current_on = [](PGM_P const s, const int16_t a, const int16_t b) {
-        if (DEBUGGING(LEVELING)) { DEBUG_ECHOPGM_P(s); DEBUG_ECHOLNPGM(" current: ", a, " -> ", b); }
-      };
+      #if HAS_CURRENT_HOME(Z2)
+        static int16_t saved_current_Z2;
+      #endif
+      #if HAS_CURRENT_HOME(Z3)
+        static int16_t saved_current_Z3;
+      #endif
+      #if HAS_CURRENT_HOME(Z4)
+        static int16_t saved_current_Z4;
+      #endif
+
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        auto debug_current = [](FSTR_P const s, const int16_t a, const int16_t b) {
+          if (DEBUGGING(LEVELING)) { DEBUG_ECHOLN(s, F(" current: "), a, F(" -> "), b); }
+        };
+      #else
+        #define debug_current(...)
+      #endif
+
+      #define _SAVE_SET_CURRENT(A) \
+        saved_current_##A = stepper##A.getMilliamps(); \
+        stepper##A.rms_current(A##_CURRENT_HOME); \
+        debug_current(F(STR_##A), saved_current_##A, A##_CURRENT_HOME)
+
+      #define _RESTORE_CURRENT(A) \
+        stepper##A.rms_current(saved_current_##A); \
+        debug_current(F(STR_##A), saved_current_##A, A##_CURRENT_HOME)
+
       if (onoff) {
         #if HAS_DELTA_X_CURRENT
           saved_current_x = stepperX.getMilliamps();

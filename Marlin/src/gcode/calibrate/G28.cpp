@@ -285,9 +285,20 @@ void GcodeSuite::G28() {
     #endif
 
     #if HAS_HOMING_CURRENT
-      auto debug_current = [](FSTR_P const s, const int16_t a, const int16_t b) {
-        DEBUG_ECHOF(s); DEBUG_ECHOLNPGM(" current: ", a, " -> ", b);
-      };
+
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        auto debug_current = [](FSTR_P const s, const int16_t a, const int16_t b) {
+          if (DEBUGGING(LEVELING)) { DEBUG_ECHOLN(s, F(" current: "), a, F(" -> "), b); }
+        };
+      #else
+        #define debug_current(...)
+      #endif
+
+      #define _SAVE_SET_CURRENT(A) \
+        const int16_t saved_current_##A = stepper##A.getMilliamps(); \
+        stepper##A.rms_current(A##_CURRENT_HOME); \
+        debug_current(F(STR_##A), saved_current_##A, A##_CURRENT_HOME)
+
       #if HAS_CURRENT_HOME(X)
         const int16_t tmc_save_current_X = stepperX.getMilliamps();
         stepperX.rms_current(X_CURRENT_HOME);
