@@ -53,11 +53,19 @@ void TFT_SPI::DataTransferBegin(uint16_t DataSize) {
   WRITE(TFT_CS_PIN, LOW);
 }
 
-uint32_t TFT_SPI::GetID() {
+#ifdef TFT_DEFAULT_DRIVER
+  #include "../../../lcd/tft_io/tft_ids.h"
+#endif
+
+uint32_t TFT_SPI::getID() {
   uint32_t id;
   id = ReadID(LCD_READ_ID);
   if ((id & 0xFFFF) == 0 || (id & 0xFFFF) == 0xFFFF)
-    id = ReadID(LCD_READ_ID4);
+    id = readID(LCD_READ_ID4);
+    #ifdef TFT_DEFAULT_DRIVER
+      if ((id & 0xFFFF) == 0 || (id & 0xFFFF) == 0xFFFF)
+        id = TFT_DEFAULT_DRIVER;
+    #endif
   return id;
 }
 
