@@ -2010,11 +2010,11 @@ bool Planner::_populate_block(
       if (CORESIGN(db - dc) < 0) SBI(dm, C_AXIS); // Motor C direction
     #endif
   #elif ENABLED(MARKFORGED_XY)
-    if (da + db < 0) SBI(dm, A_AXIS);              // Motor A direction
-    if (db < 0) SBI(dm, B_AXIS);                   // Motor B direction
+    dm.a = (dist.a TERN(MARKFORGED_INVERSE, -, +) dist.b > 0); // Motor A direction
+    dm.b = (dist.b > 0);                        // Motor B direction
   #elif ENABLED(MARKFORGED_YX)
-    if (da < 0) SBI(dm, A_AXIS);                   // Motor A direction
-    if (db + da < 0) SBI(dm, B_AXIS);              // Motor B direction
+    dm.a = (dist.a > 0);                        // Motor A direction
+    dm.b = (dist.b TERN(MARKFORGED_INVERSE, -, +) dist.a > 0); // Motor B direction
   #else
     XYZ_CODE(
       if (da < 0) SBI(dm, X_AXIS),
@@ -2086,9 +2086,9 @@ bool Planner::_populate_block(
     #elif CORE_IS_YZ
       ABS(da), ABS(db + dc), ABS(db - dc)
     #elif ENABLED(MARKFORGED_XY)
-      ABS(da + db), ABS(db), ABS(dc)
+      ABS(dist.a TERN(MARKFORGED_INVERSE, -, +) dist.b), ABS(dist.b), ABS(dist.c)
     #elif ENABLED(MARKFORGED_YX)
-      ABS(da), ABS(db + da), ABS(dc)
+      ABS(dist.a), ABS(dist.b TERN(MARKFORGED_INVERSE, -, +) dist.a), ABS(dist.c)
     #elif IS_SCARA
       ABS(da), ABS(db), ABS(dc)
     #else // default non-h-bot planning
@@ -2134,11 +2134,11 @@ bool Planner::_populate_block(
       steps_dist_mm.c      = CORESIGN(db - dc) * mm_per_step[C_AXIS];
     #endif
   #elif ENABLED(MARKFORGED_XY)
-    steps_dist_mm.a      = (da - db) * mm_per_step[A_AXIS];
-    steps_dist_mm.b      = db * mm_per_step[B_AXIS];
+    dist_mm.a = (dist.a TERN(MARKFORGED_INVERSE, +, -) dist.b) * mm_per_step[A_AXIS];
+    dist_mm.b = dist.b * mm_per_step[B_AXIS];
   #elif ENABLED(MARKFORGED_YX)
-    steps_dist_mm.a      = da * mm_per_step[A_AXIS];
-    steps_dist_mm.b      = (db - da) * mm_per_step[B_AXIS];
+    dist_mm.a = dist.a * mm_per_step[A_AXIS];
+    dist_mm.b = (dist.b TERN(MARKFORGED_INVERSE, +, -) dist.a) * mm_per_step[B_AXIS];
   #else
     XYZ_CODE(
       steps_dist_mm.a = da * mm_per_step[A_AXIS],
