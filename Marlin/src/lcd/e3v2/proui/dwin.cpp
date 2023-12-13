@@ -1251,7 +1251,7 @@ void EachMomentUpdate() {
   static millis_t next_var_update_ms = 0, next_rts_update_ms = 0, next_status_update_ms = 0;
   const millis_t ms = millis();
 
-  #if LCD_BACKLIGHT_TIMEOUT_MINS
+  #if HAS_BACKLIGHT_TIMEOUT
     if (ui.backlight_off_ms && ELAPSED(ms, ui.backlight_off_ms)) {
       turnOffBacklight(); // Backlight off
       ui.backlight_off_ms = 0;
@@ -2237,7 +2237,7 @@ void SetMoveZ() { HMI_value.axis = Z_AXIS; SetPFloatOnClick(Z_MIN_POS, Z_MAX_POS
 
 #endif
 
-#if LCD_BACKLIGHT_TIMEOUT_MINS
+#if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
   void applyTimer() { ui.backlight_timeout_minutes = menuData.value; }
   void setTimer() { setIntOnClick(ui.backlight_timeout_min, ui.backlight_timeout_max, ui.backlight_timeout_minutes, applyTimer); }
 #endif
@@ -3131,7 +3131,7 @@ void drawAdvancedSettingsMenu() {
     #if HAS_LOCKSCREEN
       MENU_ITEM(ICON_Lock, MSG_LOCKSCREEN, onDrawMenuItem, DWIN_LockScreen);
     #endif
-    #if LCD_BACKLIGHT_TIMEOUT_MINS
+    #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
       EDIT_ITEM(ICON_Brightness, MSG_SCREEN_TIMEOUT, onDrawPIntMenu, setTimer, &ui.backlight_timeout_minutes);
     #endif
     #if ENABLED(SOUND_MENU_ITEM)
@@ -3352,7 +3352,7 @@ void drawTuneMenu() {
       EDIT_ITEM(ICON_Brightness, MSG_BRIGHTNESS, onDrawPInt8Menu, SetBrightness, &ui.brightness);
       MENU_ITEM(ICON_Brightness, MSG_BRIGHTNESS_OFF, onDrawMenuItem, TurnOffBacklight);
     #endif
-    #if LCD_BACKLIGHT_TIMEOUT_MINS
+    #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
       EDIT_ITEM(ICON_Brightness, MSG_SCREEN_TIMEOUT, onDrawPIntMenu, setTimer, &ui.backlight_timeout_minutes);
     #endif
     #if ENABLED(CASE_LIGHT_MENU)

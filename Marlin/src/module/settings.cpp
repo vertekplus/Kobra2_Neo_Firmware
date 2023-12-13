@@ -428,10 +428,12 @@ typedef struct SettingsDataStruct {
   //
   // Display Sleep
   //
-  #if LCD_BACKLIGHT_TIMEOUT_MINS
-    uint8_t backlight_timeout_minutes;                  // M255 S
-  #elif HAS_DISPLAY_SLEEP
-    uint8_t sleep_timeout_minutes;                      // M255 S
+  #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
+    #if HAS_BACKLIGHT_TIMEOUT
+      uint8_t backlight_timeout_minutes;                // M255 S
+    #elif HAS_DISPLAY_SLEEP
+      uint8_t sleep_timeout_minutes;                    // M255 S
+    #endif
   #endif
 
   //
@@ -695,12 +697,8 @@ void MarlinSettings::postprocess() {
   // Moved as last update due to interference with Neopixel init
   TERN_(HAS_LCD_CONTRAST, ui.refresh_contrast());
   TERN_(HAS_LCD_BRIGHTNESS, ui.refresh_brightness());
-
-  #if LCD_BACKLIGHT_TIMEOUT_MINS
-    ui.refresh_backlight_timeout();
-  #elif HAS_DISPLAY_SLEEP
-    ui.refresh_screen_timeout();
-  #endif
+  TERN_(HAS_BACKLIGHT_TIMEOUT, ui.refresh_backlight_timeout());
+  TERN_(HAS_DISPLAY_SLEEP, ui.refresh_screen_timeout());
 }
 
 #if BOTH(PRINTCOUNTER, EEPROM_SETTINGS)
@@ -1236,10 +1234,12 @@ void MarlinSettings::postprocess() {
     //
     // LCD Backlight / Sleep Timeout
     //
-    #if LCD_BACKLIGHT_TIMEOUT_MINS
-      EEPROM_WRITE(ui.backlight_timeout_minutes);
-    #elif HAS_DISPLAY_SLEEP
-      EEPROM_WRITE(ui.sleep_timeout_minutes);
+    #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
+      #if HAS_BACKLIGHT_TIMEOUT
+        EEPROM_WRITE(ui.backlight_timeout_minutes);
+      #elif HAS_DISPLAY_SLEEP
+        EEPROM_WRITE(ui.sleep_timeout_minutes);
+      #endif
     #endif
 
     //
@@ -2269,10 +2269,12 @@ void MarlinSettings::postprocess() {
       //
       // LCD Backlight / Sleep Timeout
       //
-      #if LCD_BACKLIGHT_TIMEOUT_MINS
-        EEPROM_READ(ui.backlight_timeout_minutes);
-      #elif HAS_DISPLAY_SLEEP
-        EEPROM_READ(ui.sleep_timeout_minutes);
+      #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
+        #if HAS_BACKLIGHT_TIMEOUT
+          EEPROM_READ(ui.backlight_timeout_minutes);
+        #elif HAS_DISPLAY_SLEEP
+          EEPROM_READ(ui.sleep_timeout_minutes);
+        #endif
       #endif
 
       //
@@ -3417,10 +3419,12 @@ void MarlinSettings::reset() {
   //
   // LCD Backlight / Sleep Timeout
   //
-  #if LCD_BACKLIGHT_TIMEOUT_MINS
-    ui.backlight_timeout_minutes = LCD_BACKLIGHT_TIMEOUT_MINS;
-  #elif HAS_DISPLAY_SLEEP
-    ui.sleep_timeout_minutes = TERN(TOUCH_SCREEN, TOUCH_IDLE_SLEEP_MINS, DISPLAY_SLEEP_MINUTES);
+  #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
+    #if HAS_BACKLIGHT_TIMEOUT
+      ui.backlight_timeout_minutes = LCD_BACKLIGHT_TIMEOUT_MINS;
+    #elif HAS_DISPLAY_SLEEP
+      ui.sleep_timeout_minutes = TERN(TOUCH_SCREEN, TOUCH_IDLE_SLEEP_MINS, DISPLAY_SLEEP_MINUTES);
+    #endif
   #endif
 
   //
@@ -3795,7 +3799,7 @@ void MarlinSettings::reset() {
     //
     // Display Sleep
     //
-    TERN_(HAS_GCODE_M255, gcode.M255_report(forReplay));
+    TERN_(EDITABLE_DISPLAY_TIMEOUT, gcode.M255_report(forReplay));
 
     //
     // LCD Brightness

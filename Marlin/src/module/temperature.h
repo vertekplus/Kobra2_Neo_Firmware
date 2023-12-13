@@ -697,7 +697,7 @@ class Temperature {
 
       // Convert the given heater_id_t to idle array index
       static IdleIndex idle_index_for_id(const int8_t heater_id) {
-        TERN_(HAS_HEATED_BED, if (heater_id == H_BED) return IDLE_INDEX_BED);
+        OPTCODE(HAS_HEATED_BED, if (heater_id == H_BED) return IDLE_INDEX_BED)
         return (IdleIndex)_MAX(heater_id, 0);
       }
 
@@ -1050,7 +1050,7 @@ class Temperature {
       }
 
       // Start watching the Bed to make sure it's really heating up
-      static void start_watching_bed() { TERN_(WATCH_BED, watch_bed.restart(degBed(), degTargetBed())); }
+      static void start_watching_bed() { OPTCODE(WATCH_BED, watch_bed.restart(degBed(), degTargetBed())) }
 
       static void setTargetBed(const celsius_t celsius) {
         #if PREHEAT_TIME_BED_MS > 0
@@ -1106,7 +1106,7 @@ class Temperature {
         start_watching_chamber();
       }
       // Start watching the Chamber to make sure it's really heating up
-      static void start_watching_chamber() { TERN_(WATCH_CHAMBER, watch_chamber.restart(degChamber(), degTargetChamber())); }
+      static void start_watching_chamber() { OPTCODE(WATCH_CHAMBER, watch_chamber.restart(degChamber(), degTargetChamber())) }
     #endif
 
     #if HAS_TEMP_COOLER
@@ -1156,7 +1156,7 @@ class Temperature {
         start_watching_cooler();
       }
       // Start watching the Cooler to make sure it's really cooling down
-      static void start_watching_cooler() { TERN_(WATCH_COOLER, watch_cooler.restart(degCooler(), degTargetCooler())); }
+      static void start_watching_cooler() { OPTCODE(WATCH_COOLER, watch_cooler.restart(degCooler(), degTargetCooler())) }
     #endif
 
     /**
@@ -1384,9 +1384,9 @@ class Temperature {
 
       // Convert the given heater_id_t to runaway state array index
       static RunawayIndex runaway_index_for_id(const int8_t heater_id) {
-        TERN_(THERMAL_PROTECTION_CHAMBER, if (heater_id == H_CHAMBER) return RUNAWAY_IND_CHAMBER);
-        TERN_(THERMAL_PROTECTION_COOLER,  if (heater_id == H_COOLER)  return RUNAWAY_IND_COOLER);
-        TERN_(THERMAL_PROTECTION_BED,     if (heater_id == H_BED)     return RUNAWAY_IND_BED);
+        OPTCODE(THERMAL_PROTECTION_CHAMBER, if (heater_id == H_CHAMBER) return RUNAWAY_IND_CHAMBER)
+        OPTCODE(THERMAL_PROTECTION_COOLER,  if (heater_id == H_COOLER)  return RUNAWAY_IND_COOLER)
+        OPTCODE(THERMAL_PROTECTION_BED,     if (heater_id == H_BED)     return RUNAWAY_IND_BED)
         return (RunawayIndex)_MAX(heater_id, 0);
       }
 
