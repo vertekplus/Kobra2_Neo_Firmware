@@ -59,6 +59,7 @@
  *               51 - Counter-Clockwise M5
  **/
 void GcodeSuite::G35() {
+
   DEBUG_SECTION(log_G35, "G35", DEBUGGING(LEVELING));
 
   if (DEBUGGING(LEVELING)) log_machine_info();
