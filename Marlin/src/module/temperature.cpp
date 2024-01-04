@@ -180,10 +180,6 @@
   #include "../feature/joystick.h"
 #endif
 
-#if ENABLED(SINGLENOZZLE)
-  #include "tool_change.h"
-#endif
-
 #if HAS_BEEPER
   #include "../libs/buzzer.h"
 #endif
