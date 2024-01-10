@@ -3684,7 +3684,7 @@ void MarlinSettings::reset() {
     //
     // M92 Steps per Unit
     //
-    gcode.M92_report(forReplay);
+    TERN_(EDITABLE_STEPS_PER_UNIT, gcode.M92_report(forReplay));
 
     //
     // M203 Maximum feedrates (units/s)
