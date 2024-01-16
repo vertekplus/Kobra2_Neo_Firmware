@@ -1920,12 +1920,14 @@ bool Planner::_populate_block(
   /* <-- add a slash to enable
     SERIAL_ECHOLNPGM(
       "  _populate_block FR:", fr_mm_s,
-      " A:", target.a, " (", da, " steps)"
+      #if HAS_X_AXIS
+        " " STR_A ":", target.a, " (", dist.a, " steps)"
+      #endif
       #if HAS_Y_AXIS
-        " B:", target.b, " (", db, " steps)"
+        " " STR_B ":", target.b, " (", dist.b, " steps)"
       #endif
       #if HAS_Z_AXIS
-        " C:", target.c, " (", dc, " steps)"
+        " " STR_C ":", target.c, " (", dist.c, " steps)"
       #endif
       #if HAS_I_AXIS
         " " STR_I ":", target.i, " (", di, " steps)"
@@ -2226,11 +2228,17 @@ bool Planner::_populate_block(
 
   TERN_(HAS_EXTRUDERS, block->steps.e = esteps);
 
-  block->step_event_count = _MAX(LOGICAL_AXIS_LIST(esteps,
-    block->steps.a, block->steps.b, block->steps.c,
-    block->steps.i, block->steps.j, block->steps.k,
-    block->steps.u, block->steps.v, block->steps.w
-  ));
+  block->step_event_count = (
+    #if NUM_AXES
+      _MAX(LOGICAL_AXIS_LIST(esteps,
+        block->steps.a, block->steps.b, block->steps.c,
+        block->steps.i, block->steps.j, block->steps.k,
+        block->steps.u, block->steps.v, block->steps.w
+      ))
+    #elif HAS_EXTRUDERS
+      esteps
+    #endif
+  );
 
   // Bail if this is a zero-length block
   if (block->step_event_count < MIN_STEPS_PER_SEGMENT) return false;
@@ -2499,8 +2507,8 @@ bool Planner::_populate_block(
   #if ENABLED(LIN_ADVANCE)
     bool use_advance_lead = false;
   #endif
-  if (NUM_AXIS_GANG(
-         !block->steps.a, && !block->steps.b, && !block->steps.c,
+  if (true NUM_AXIS_GANG(
+      && !block->steps.a, && !block->steps.b, && !block->steps.c,
       && !block->steps.i, && !block->steps.j, && !block->steps.k,
       && !block->steps.u, && !block->steps.v, && !block->steps.w)
   ) {                                                             // Is this a retract / recover move?
