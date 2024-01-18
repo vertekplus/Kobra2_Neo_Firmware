@@ -1155,8 +1155,8 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
     #error "You can't enable FIL_RUNOUT8_PULLUP and FIL_RUNOUT8_PULLDOWN at the same time."
   #elif FILAMENT_RUNOUT_DISTANCE_MM < 0
     #error "FILAMENT_RUNOUT_DISTANCE_MM must be greater than or equal to zero."
-  #elif DISABLED(ADVANCED_PAUSE_FEATURE)
-    static_assert(nullptr == strstr(FILAMENT_RUNOUT_SCRIPT, "M600"), "ADVANCED_PAUSE_FEATURE is required to use M600 with FILAMENT_RUNOUT_SENSOR.");
+  #elif DISABLED(ADVANCED_PAUSE_FEATURE) && defined(FILAMENT_RUNOUT_SCRIPT)
+    static_assert(nullptr == strstr(FILAMENT_RUNOUT_SCRIPT, "M600"), "FILAMENT_RUNOUT_SCRIPT cannot make use of M600 unless ADVANCED_PAUSE_FEATURE is enabled");
   #endif
 #endif
 
@@ -1228,7 +1228,7 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
   #elif ENABLED(MMU2_MENUS) && !HAS_MARLINUI_MENU
     #error "MMU2_MENUS requires an LCD supporting MarlinUI."
   #elif DISABLED(ADVANCED_PAUSE_FEATURE)
-    static_assert(nullptr == strstr(MMU2_FILAMENT_RUNOUT_SCRIPT, "M600"), "ADVANCED_PAUSE_FEATURE is required to use M600 with PRUSA_MMU2(S) / HAS_EXTENDABLE_MMU(S).");
+    static_assert(nullptr == strstr(MMU2_FILAMENT_RUNOUT_SCRIPT, "M600"), "MMU2_FILAMENT_RUNOUT_SCRIPT cannot make use of M600 unless ADVANCED_PAUSE_FEATURE is enabled");
   #endif
 #endif
 
