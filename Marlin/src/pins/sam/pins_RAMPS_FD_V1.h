@@ -164,6 +164,7 @@
 //
 // LCD / Controller
 //
+
 #if HAS_WIRED_LCD
   // ramps-fd lcd adaptor
 

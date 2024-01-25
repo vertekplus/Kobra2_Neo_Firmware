@@ -585,9 +585,9 @@
 
 #endif
 
-//////////////////////////
-// LCDs and Controllers //
-//////////////////////////
+//
+// LCD / Controller
+//
 
 #if HAS_WIRED_LCD && DISABLED(LCD_PINS_DEFINED)
 

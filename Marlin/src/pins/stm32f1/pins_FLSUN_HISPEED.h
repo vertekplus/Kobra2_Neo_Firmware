@@ -268,6 +268,7 @@
 //
 // LCD / Controller
 //
+
 #ifndef BEEPER_PIN
   #define BEEPER_PIN                        PC5
 #endif

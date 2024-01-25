@@ -139,6 +139,7 @@
 //
 // LCD / Controller
 //
+
 #if ENABLED(MINIPANEL)
 
   #define BEEPER_PIN                          46

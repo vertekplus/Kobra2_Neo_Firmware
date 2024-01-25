@@ -71,6 +71,7 @@
 //
 // LCD / Controller
 //
+
 #if HAS_WIRED_LCD
 
   #if BOTH(IS_NEWPANEL, PANEL_ONE)

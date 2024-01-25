@@ -51,6 +51,6 @@
 #endif
 
 //
-// LCDs and Controllers
+// LCD / Controller
 //
 #undef BEEPER_PIN
