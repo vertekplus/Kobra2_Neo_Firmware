@@ -31,6 +31,7 @@
 #include "menu_item.h"
 
 #include "../../MarlinCore.h"
+#include "../../module/temperature.h"
 
 #if HAS_MULTI_LANGUAGE
   void menu_language();
