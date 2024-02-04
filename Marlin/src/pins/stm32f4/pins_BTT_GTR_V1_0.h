@@ -31,7 +31,7 @@
 
 #define BOARD_INFO_NAME "BTT GTR V1.0"
 
-#define USES_DIAG_JUMPERS
+#define USES_DIAG_PINS                            // DIAG jumpers rendered useless due to a board design error
 #define HAS_OTG_USB_HOST_SUPPORT                  // USB Flash Drive support
 #define M5_EXTENDER                               // The M5 extender is attached
 
@@ -106,11 +106,22 @@
 // Pins on the extender
 //
 #if ENABLED(M5_EXTENDER)
-  #define X2_STOP_PIN                       PI4   // M5 M1_STOP
-  #define Y2_STOP_PIN                       PF12  // M5 M5_STOP
-  #define Z2_STOP_PIN                       PF4   // M5 M2_STOP
-  #define Z3_STOP_PIN                       PI7   // M5 M4_STOP
-  #define Z4_STOP_PIN                       PF6   // M5 M3_STOP
+  #define USES_DIAG_JUMPERS                       // DIAG jumpers work on M5 extender
+  #ifndef X2_STOP_PIN
+    #define X2_STOP_PIN                     PI4   // M5 M1_STOP
+  #endif
+  #ifndef Y2_STOP_PIN
+    #define Y2_STOP_PIN                     PF12  // M5 M5_STOP
+  #endif
+  #ifndef Z2_STOP_PIN
+    #define Z2_STOP_PIN                     PF4   // M5 M2_STOP
+  #endif
+  #ifndef Z3_STOP_PIN
+    #define Z3_STOP_PIN                     PI7   // M5 M4_STOP
+  #endif
+  #ifndef Z4_STOP_PIN
+    #define Z4_STOP_PIN                     PF6   // M5 M3_STOP
+  #endif
 #endif
 
 #ifndef Z_MIN_PROBE_PIN
