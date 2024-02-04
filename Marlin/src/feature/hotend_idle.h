@@ -21,7 +21,22 @@
  */
 #pragma once
 
-#include "../core/millis_t.h"
+#include "../inc/MarlinConfig.h"
+
+typedef struct {
+  int16_t timeout, trigger, nozzle_target;
+  #if HAS_HEATED_BED
+    int16_t bed_target;
+  #endif
+  void set_defaults() {
+    timeout       = HOTEND_IDLE_TIMEOUT_SEC;
+    trigger       = HOTEND_IDLE_MIN_TRIGGER;
+    nozzle_target = HOTEND_IDLE_NOZZLE_TARGET;
+    #if HAS_HEATED_BED
+      bed_target  = HOTEND_IDLE_BED_TARGET;
+    #endif
+  }
+} hotend_idle_settings_t;
 
 class HotendIdleProtection {
 public:
