@@ -125,6 +125,10 @@ namespace ExtUI {
     }
   #endif
 
+  #if ENABLED(PREVENT_COLD_EXTRUSION)
+    void onSetMinExtrusionTemp(const celsius_t) {}
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     // Called when power-loss is enabled/disabled
     void onSetPowerLoss(const bool) { Dgus.PowerLoss(); }
