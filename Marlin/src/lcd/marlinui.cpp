@@ -1834,11 +1834,10 @@ void MarlinUI::host_notify(const char * const cstr) {
   void MarlinUI::abort_print() {
     #if ENABLED(SDSUPPORT)
       wait_for_heatup = wait_for_user = false;
-      card.abortFilePrintSoon();
-      did_pause_print = 0;
-  
-      runout.filament_ran_out = false;
-      ui.clear_all = ui.start_print_status = false;  
+      if (IS_SD_PRINTING())
+        card.abortFilePrintSoon();
+      else if (card.isMounted())
+        card.closefile();
     #endif
     #ifdef ACTION_ON_CANCEL
       hostui.cancel();
