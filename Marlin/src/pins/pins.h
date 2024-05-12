@@ -72,6 +72,12 @@
   #define NOT_TARGET NONE
 #endif
 
+#ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+  #define CONTROLLER_WARNING(PF,CN,V...) static_assert(false, "\n\nWARNING! " CN " requires wiring modification! See pins_" PF ".h for details." V "\n (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)\n\n");
+#else
+  #define CONTROLLER_WARNING(...)
+#endif
+
 //
 // RAMPS 1.3 / 1.4 / 1.6+ - ATmega1280, ATmega2560
 //
@@ -1018,3 +1024,6 @@
 // Post-process pins according to configured settings
 //
 #include "pins_postprocess.h"
+
+// Cleanup
+#undef CONTROLLER_WARNING
