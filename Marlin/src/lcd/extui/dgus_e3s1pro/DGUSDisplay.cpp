@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2023 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -24,7 +24,7 @@
 
 #include "../../../inc/MarlinConfigPre.h"
 
-#if DGUS_LCD_UI_RELOADED
+#if ENABLED(DGUS_LCD_UI_E3S1PRO)
 
 #include "DGUSDisplay.h"
 
@@ -33,7 +33,6 @@
 #include "definition/DGUS_VPList.h"
 
 #include "../ui_api.h"
-#include "../../../gcode/gcode.h"
 
 long map_precise(float x, long in_min, long in_max, long out_min, long out_max) {
   return LROUND((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
@@ -50,38 +49,36 @@ uint8_t DGUSDisplay::rx_datagram_len = 0;
 
 bool DGUSDisplay::initialized = false;
 
-void DGUSDisplay::Loop() {
-  ProcessRx();
+void DGUSDisplay::loop() {
+  processRx();
 }
 
-void DGUSDisplay::Init() {
+void DGUSDisplay::init() {
   LCD_SERIAL.begin(LCD_BAUDRATE);
 
-  ReadVersions();
+  readVersions();
 }
 
-void DGUSDisplay::Read(uint16_t addr, uint8_t size) {
-  WriteHeader(addr, DGUS_READVAR, size);
+void DGUSDisplay::read(uint16_t addr, uint8_t size) {
+  writeHeader(addr, DGUS_READVAR, size);
 
   LCD_SERIAL.write(size);
 }
 
-void DGUSDisplay::Write(uint16_t addr, const void* data_ptr, uint8_t size) {
+void DGUSDisplay::write(uint16_t addr, const void* data_ptr, uint8_t size) {
   if (!data_ptr) return;
 
-  WriteHeader(addr, DGUS_WRITEVAR, size);
+  writeHeader(addr, DGUS_WRITEVAR, size);
 
   const char* data = static_cast<const char*>(data_ptr);
 
-  while (size--) {
-    LCD_SERIAL.write(*data++);
-  }
+  while (size--) LCD_SERIAL.write(*data++);
 }
 
-void DGUSDisplay::WriteString(uint16_t addr, const void* data_ptr, uint8_t size, bool left, bool right, bool use_space) {
+void DGUSDisplay::writeString(uint16_t addr, const void* data_ptr, uint8_t size, bool left, bool right, bool use_space) {
   if (!data_ptr) return;
 
-  WriteHeader(addr, DGUS_WRITEVAR, size);
+  writeHeader(addr, DGUS_WRITEVAR, size);
 
   const char* data = static_cast<const char*>(data_ptr);
   size_t len = strlen(data);
@@ -92,36 +89,31 @@ void DGUSDisplay::WriteString(uint16_t addr, const void* data_ptr, uint8_t size,
     if (!len) {
       right_spaces = size;
     }
-    else if ((left && right) || (!left && !right)) {
-      left_spaces = (size - len) / 2;
-      right_spaces = size - len - left_spaces;
-    }
-    else if (left) {
-      right_spaces = size - len;
-    }
     else {
-      left_spaces = size - len;
+      const uint8_t rem = size - len;
+      if ((left && right) || (!left && !right)) {
+        left_spaces = rem / 2;
+        right_spaces = rem - left_spaces;
+      }
+      else if (left)
+        right_spaces = rem;
+      else
+        left_spaces = rem;
     }
   }
   else {
     len = size;
   }
 
-  while (left_spaces--) {
-    LCD_SERIAL.write(' ');
-  }
-  while (len--) {
-    LCD_SERIAL.write(*data++);
-  }
-  while (right_spaces--) {
-    LCD_SERIAL.write(use_space ? ' ' : '\0');
-  }
+  while (left_spaces--)  LCD_SERIAL.write(' ');
+  while (len--)          LCD_SERIAL.write(*data++);
+  while (right_spaces--) LCD_SERIAL.write(use_space ? ' ' : '\0');
 }
 
-void DGUSDisplay::WriteStringPGM(uint16_t addr, const void* data_ptr, uint8_t size, bool left, bool right, bool use_space) {
+void DGUSDisplay::writeStringPGM(uint16_t addr, const void* data_ptr, uint8_t size, bool left, bool right, bool use_space) {
   if (!data_ptr) return;
 
-  WriteHeader(addr, DGUS_WRITEVAR, size);
+  writeHeader(addr, DGUS_WRITEVAR, size);
 
   const char* data = static_cast<const char*>(data_ptr);
   size_t len = strlen_P(data);
@@ -151,61 +143,63 @@ void DGUSDisplay::WriteStringPGM(uint16_t addr, const void* data_ptr, uint8_t si
   while (right_spaces--) LCD_SERIAL.write(use_space ? ' ' : '\0');
 }
 
-void DGUSDisplay::ReadVersions() {
+void DGUSDisplay::readVersions() {
   if (gui_version != 0 && os_version != 0) return;
-  Read(DGUS_VERSION, 1);
+  read(DGUS_VERSION, 1);
 }
 
-void DGUSDisplay::SwitchScreen(DGUS_Screen screen) {
+void DGUSDisplay::switchScreen(DGUS_ScreenID screen) {
   const uint8_t command[] = { 0x5A, 0x01, 0x00, (uint8_t)screen };
-  Write(0x84, command, sizeof(command));
+  write(0x84, command, sizeof(command));
 }
 
-void DGUSDisplay::PlaySound(uint8_t start, uint8_t len, uint8_t volume) {
+void DGUSDisplay::playSound(uint8_t start, uint8_t len, uint8_t volume) {
   if (volume == 0) volume = DGUSDisplay::volume;
+  else volume = map_precise(constrain(volume, 0, 100), 0, 100, 0, 0x40);
+
   if (volume == 0) return;
   const uint8_t command[] = { start, len, volume, 0x00 };
-  Write(0xA0, command, sizeof(command));
+  write(0xA0, command, sizeof(command));
 }
 
-void DGUSDisplay::EnableControl(DGUS_Screen screen, DGUS_ControlType type, DGUS_Control control) {
+void DGUSDisplay::enableControl(DGUS_ScreenID screen, DGUS_ControlType type, DGUS_Control control) {
   const uint8_t command[] = { 0x5A, 0xA5, 0x00, (uint8_t)screen, (uint8_t)control, type, 0x00, 0x01 };
-  Write(0xB0, command, sizeof(command));
+  write(0xB0, command, sizeof(command));
 
-  FlushTx();
+  flushTx();
   delay(50);
 }
 
-void DGUSDisplay::DisableControl(DGUS_Screen screen, DGUS_ControlType type, DGUS_Control control) {
+void DGUSDisplay::disableControl(DGUS_ScreenID screen, DGUS_ControlType type, DGUS_Control control) {
   const uint8_t command[] = { 0x5A, 0xA5, 0x00, (uint8_t)screen, (uint8_t)control, type, 0x00, 0x00 };
-  Write(0xB0, command, sizeof(command));
+  write(0xB0, command, sizeof(command));
 
-  FlushTx();
+  flushTx();
   delay(50);
 }
 
-uint8_t DGUSDisplay::GetBrightness() {
+uint8_t DGUSDisplay::getBrightness() {
   return brightness;
 }
 
-uint8_t DGUSDisplay::GetVolume() {
-  return map_precise(volume, 0, 255, 0, 100);
+uint8_t DGUSDisplay::getVolume() {
+  return map_precise(volume, 0, 0x40, 0, 100);
 }
 
-void DGUSDisplay::SetBrightness(uint8_t new_brightness) {
+void DGUSDisplay::setBrightness(uint8_t new_brightness) {
   brightness = constrain(new_brightness, 0, 100);
   new_brightness = map_precise(brightness, 0, 100, 5, 100);
   const uint8_t command[] = { new_brightness, new_brightness };
-  Write(0x82, command, sizeof(command));
+  write(0x82, command, sizeof(command));
 }
 
-void DGUSDisplay::SetVolume(uint8_t new_volume) {
-  volume = map_precise(constrain(new_volume, 0, 100), 0, 100, 0, 255);
+void DGUSDisplay::setVolume(uint8_t new_volume) {
+  volume = map_precise(constrain(new_volume, 0, 100), 0, 100, 0, 0x40);
   const uint8_t command[] = { volume, 0x00 };
-  Write(0xA1, command, sizeof(command));
+  write(0xA1, command, sizeof(command));
 }
 
-void DGUSDisplay::ProcessRx() {
+void DGUSDisplay::processRx() {
 
   #if ENABLED(LCD_SERIAL_STATS_RX_BUFFER_OVERRUNS)
     if (!LCD_SERIAL.available() && LCD_SERIAL.buffer_overruns()) {
@@ -220,7 +214,6 @@ void DGUSDisplay::ProcessRx() {
   uint8_t receivedbyte;
   while (LCD_SERIAL.available()) {
     switch (rx_datagram_state) {
-
       case DGUS_IDLE: // Waiting for the first header byte
         receivedbyte = LCD_SERIAL.read();
         if (DGUS_HEADER1 == receivedbyte) rx_datagram_state = DGUS_HEADER1_SEEN;
@@ -256,19 +249,25 @@ void DGUSDisplay::ProcessRx() {
           break;
         }
 
-        /* AutoUpload, (and answer to) Command 0x83 :
-        |      tmp[0  1  2  3  4 ... ]
-        | Example 5A A5 06 83 20 01 01 78 01 ……
-        |          / /  |  |   \ /   |  \     \
-        |        Header |  |    |    |   \_____\_ DATA (Words!)
-        |     DatagramLen  /  VPAdr  |
-        |           Command          DataLen (in Words) */
+        /**
+         * AutoUpload, (and answer to) Command 0x83 :
+         *      tmp[0  1  2  3  4 ... ]
+         * Example 5A A5 06 83 20 01 01 78 01 ……
+         *          / /  |  |   \ /   |  \     \
+         *        Header |  |    |    |   \_____\_ DATA (Words!)
+         *     DatagramLen  /  VPAdr  |
+         *           Command          DataLen (in Words)
+         */
         if (command == DGUS_READVAR) {
-          const uint16_t addr = tmp[0] << 8 | tmp[1];
+          const uint16_t addr = Endianness::fromBE_P<uint16_t>(tmp);
           const uint8_t dlen = tmp[2] << 1;  // Convert to Bytes. (Display works with words)
           if (addr == DGUS_VERSION && dlen == 2) {
             gui_version = tmp[3];
             os_version = tmp[4];
+
+            #if ENABLED(DEBUG_DGUSLCD)
+              DEBUG_ECHOLNPGM("DGUS version: GUI ", gui_version, "OS ", os_version);
+            #endif
             rx_datagram_state = DGUS_IDLE;
             break;
           }
@@ -326,13 +325,17 @@ void DGUSDisplay::ProcessRx() {
           break;
         }
 
+        #if ENABLED(DEBUG_DGUSLCD)
+          DEBUG_ECHOLNPGM("DGUS unknown command ", command);
+        #endif
+
         rx_datagram_state = DGUS_IDLE;
         break;
     }
   }
 }
 
-size_t DGUSDisplay::GetFreeTxBuffer() {
+size_t DGUSDisplay::getFreeTxBuffer() {
   return (
     #ifdef LCD_SERIAL_TX_BUFFER_FREE
       LCD_SERIAL_TX_BUFFER_FREE()
@@ -342,21 +345,22 @@ size_t DGUSDisplay::GetFreeTxBuffer() {
   );
 }
 
-void DGUSDisplay::FlushTx() {
-  #ifdef ARDUINO_ARCH_STM32
-    LCD_SERIAL.flush();
-  #else
-    LCD_SERIAL.flushTX();
-  #endif
+void DGUSDisplay::flushTx() {
+  TERN(ARDUINO_ARCH_STM32, LCD_SERIAL.flush(), LCD_SERIAL.flushTX());
 }
 
-void DGUSDisplay::WriteHeader(uint16_t addr, uint8_t command, uint8_t len) {
+void DGUSDisplay::writeHeader(uint16_t addr, uint8_t command, uint8_t len) {
   LCD_SERIAL.write(DGUS_HEADER1);
   LCD_SERIAL.write(DGUS_HEADER2);
   LCD_SERIAL.write(len + 3);
   LCD_SERIAL.write(command);
-  LCD_SERIAL.write(addr >> 8);
-  LCD_SERIAL.write(addr & 0xFF);
+
+  union {
+    uint16_t u16;
+    uint8_t u8[2];
+  } data = { Endianness::toBE(addr) };
+
+  for (uint8_t i = 0; i < sizeof(data.u8); ++i) LCD_SERIAL.write(data.u8[i]);
 }
 
 bool DGUS_PopulateVP(const DGUS_Addr addr, DGUS_VP * const buffer) {
@@ -374,4 +378,4 @@ bool DGUS_PopulateVP(const DGUS_Addr addr, DGUS_VP * const buffer) {
   return false;
 }
 
-#endif // DGUS_LCD_UI_RELOADED
+#endif // DGUS_LCD_UI_E3S1PRO
