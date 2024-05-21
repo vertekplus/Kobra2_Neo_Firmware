@@ -38,14 +38,21 @@ namespace ExtUI {
   void onStartup() { nextion.startup();  }
   void onIdle() { nextion.idleLoop(); }
   void onPrinterKilled(FSTR_P const error, FSTR_P const component) { nextion.printerKilled(error, component); }
-  void onMediaInserted() {}
+
+  void onMediaMounted() {}
   void onMediaError() {}
   void onMediaRemoved() {}
+
+  void onHeatingError(const heater_id_t header_id) {}
+  void onMinTempError(const heater_id_t header_id) {}
+  void onMaxTempError(const heater_id_t header_id) {}
+
   void onPlayTone(const uint16_t frequency, const uint16_t duration/*=0*/) {}
   void onPrintTimerStarted() {}
   void onPrintTimerPaused() {}
   void onPrintTimerStopped() {}
   void onFilamentRunout(const extruder_t) {}
+
   void onUserConfirmRequired(const char * const msg) { nextion.confirmationRequest(msg); }
 
   // For fancy LCDs include an icon ID, message, and translated button title
@@ -72,6 +79,7 @@ namespace ExtUI {
 
   void onHomingStart() {}
   void onHomingDone() {}
+
   void onPrintDone() { nextion.PrintFinished(); }
 
   void onFactoryReset() {}
@@ -113,6 +121,9 @@ namespace ExtUI {
   #if HAS_LEVELING
     void onLevelingStart() {}
     void onLevelingDone() {}
+    #if ENABLED(PREHEAT_BEFORE_LEVELING)
+      celsius_t getLevelingBedTemp() { return LEVELING_BED_TEMP; }
+    #endif
   #endif
 
   #if HAS_MESH
@@ -123,6 +134,10 @@ namespace ExtUI {
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const probe_state_t state) {
       // Called to indicate a special condition
     }
+  #endif
+
+  #if ENABLED(PREVENT_COLD_EXTRUSION)
+    void onSetMinExtrusionTemp(const celsius_t) {}
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
@@ -138,15 +153,29 @@ namespace ExtUI {
   #endif
 
   #if HAS_PID_HEATING
-    void onPidTuning(const result_t rst) {
+    void onPIDTuning(const pidresult_t rst) {
       // Called for temperature PID tuning result
       nextion.panelInfo(37);
     }
+    void onStartM303(const int count, const heater_id_t hid, const celsius_t temp) {
+      // Called by M303 to update the UI
+    }
+  #endif
+
+  #if ENABLED(MPC_AUTOTUNE)
+    void onMPCTuning(const mpcresult_t rst) {
+      // Called for temperature PID tuning result
+    }
+  #endif
+
+  #if ENABLED(PLATFORM_M997_SUPPORT)
+    void onFirmwareFlash() {}
   #endif
 
   void onSteppersDisabled() {}
-  void onSteppersEnabled()  {}
-
+  void onSteppersEnabled() {}
+  void onAxisDisabled(const axis_t) {}
+  void onAxisEnabled(const axis_t) {}
 }
 
 #endif // NEXTION_TFT

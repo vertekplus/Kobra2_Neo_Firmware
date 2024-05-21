@@ -55,9 +55,9 @@ namespace ExtUI {
     screen.printerKilled(error, component);
   }
 
-  void onMediaInserted() { TERN_(HAS_MEDIA, screen.sdCardInserted()); }
-  void onMediaError()    { TERN_(HAS_MEDIA, screen.sdCardError()); }
-  void onMediaRemoved()  { TERN_(HAS_MEDIA, screen.sdCardRemoved()); }
+  void onMediaMounted() { TERN_(HAS_MEDIA, screen.sdCardInserted()); }
+  void onMediaError()   { TERN_(HAS_MEDIA, screen.sdCardError()); }
+  void onMediaRemoved() { TERN_(HAS_MEDIA, screen.sdCardRemoved()); }
 
   void onPlayTone(const uint16_t frequency, const uint16_t duration/*=0*/) {
     screen.playTone(frequency, duration);

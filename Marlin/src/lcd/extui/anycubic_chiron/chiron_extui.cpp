@@ -45,9 +45,9 @@ namespace ExtUI {
     chiron.printerKilled(error, component);
   }
 
-  void onMediaInserted() { chiron.mediaEvent(AC_media_inserted); }
-  void onMediaError()    { chiron.mediaEvent(AC_media_error);    }
-  void onMediaRemoved()  { chiron.mediaEvent(AC_media_removed);  }
+  void onMediaMounted() { chiron.mediaEvent(AC_media_inserted); }
+  void onMediaError()   { chiron.mediaEvent(AC_media_error);    }
+  void onMediaRemoved() { chiron.mediaEvent(AC_media_removed);  }
 
   void onPlayTone(const uint16_t frequency, const uint16_t duration/*=0*/) {
     #if ENABLED(SPEAKER)
