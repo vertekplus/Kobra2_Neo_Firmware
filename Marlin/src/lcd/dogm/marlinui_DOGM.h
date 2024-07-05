@@ -152,7 +152,11 @@
   #if ENABLED(ALTERNATIVE_LCD)
     #define U8G_CLASS U8GLIB_SH1306_128X64_2X                   // 4 stripes
   #else
-    #define U8G_CLASS U8GLIB_SH1306_128X64                      // 8 stripes
+    #if ENABLED(U8GLIB_SSD1306_SPI)
+      #define U8G_CLASS U8GLIB_SSD1306_128X64_SW_SPI_HAL
+    #else
+      #define U8G_CLASS U8GLIB_SH1306_128X64                    // 8 stripes
+    #endif
   #endif
 
 #elif EITHER(MKS_12864OLED, ZONESTAR_12864OLED)
@@ -165,7 +169,11 @@
   #if ENABLED(ALTERNATIVE_LCD)
     #define U8G_CLASS U8GLIB_SH1106_128X64_2X                   // 4 stripes
   #else
-    #define U8G_CLASS U8GLIB_SH1106_128X64                      // 8 stripes
+    #if ENABLED(U8GLIB_SH1106_SPI)
+      #define U8G_CLASS U8GLIB_SH1106_128X64_SW_SPI_HAL
+    #else
+      #define U8G_CLASS U8GLIB_SH1106_128X64                    // 8 stripes
+    #endif
   #endif
 
 #elif ENABLED(U8GLIB_SH1106_EINSTART)
