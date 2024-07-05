@@ -255,6 +255,13 @@ class Endstops {
       static void enable_z_probe(const bool onoff=true);
     #endif
 
+    // Enable / disable calibration probe checking
+    #if ENABLED(CALIBRATION_GCODE)
+      static volatile bool calibration_probe_enabled;
+      static volatile bool calibration_stop_state;
+      static void enable_calibration_probe(const bool onoff, const bool stop_state=true);
+    #endif
+
     static void resync();
 
     // Debugging of endstops

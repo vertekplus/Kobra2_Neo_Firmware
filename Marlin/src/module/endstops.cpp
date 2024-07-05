@@ -1566,7 +1566,10 @@ void Endstops::update() {
       #if HAS_Z_MIN_PROBE_PIN
         ES_REPORT_CHANGE(Z_MIN_PROBE);
       #endif
-      #if HAS_X2_MIN
+      #if USE_CALIBRATION
+        ES_REPORT_CHANGE(CALIBRATION);
+      #endif
+      #if USE_X2_MIN
         ES_REPORT_CHANGE(X2_MIN);
       #endif
       #if HAS_X2_MAX
