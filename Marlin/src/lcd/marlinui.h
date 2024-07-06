@@ -330,8 +330,14 @@ public:
     static void sleep_display(const bool sleep=true);
   #endif
 
-  #if HAS_DWIN_E3V2_BASIC
-    static void refresh();
+  // Sleep or wake the display (e.g., by turning the backlight off/on).
+  static void sleep_display(const bool=true) IF_DISABLED(HAS_DISPLAY_SLEEP, {});
+  static void wake_display() { sleep_display(false); }
+
+  #if HAS_PRINT_PROGRESS_PERMYRIAD
+    typedef uint16_t progress_t;
+    #define PROGRESS_SCALE 100U
+    #define PROGRESS_MASK 0x7FFF
   #else
     FORCE_INLINE static void refresh() {
       TERN_(HAS_WIRED_LCD, refresh(LCDVIEW_CLEAR_CALL_REDRAW));
@@ -686,7 +692,7 @@ public:
 
     static void draw_select_screen_prompt(FSTR_P const pref, const char * const string=nullptr, FSTR_P const suff=nullptr);
 
-  #else
+  #else // !HAS_MARLINUI_MENU
 
     static void return_to_status() {}
 
@@ -696,7 +702,7 @@ public:
       FORCE_INLINE static void run_current_screen() { status_screen(); }
     #endif
 
-  #endif
+  #endif // !HAS_MARLINUI_MENU
 
   #if EITHER(HAS_MARLINUI_MENU, EXTENSIBLE_UI)
     static bool lcd_clicked;
