@@ -639,8 +639,8 @@ void GcodeSuite::G33() {
             SERIAL_ECHOPAIR_F("std dev:", zero_std_dev_min, 3);
           }
         SERIAL_EOL();
-        char mess[21];
-        strcpy_P(mess, PSTR("Calibration sd:"));
+
+        MString<21> msg(F("Calibration sd:"));
         if (zero_std_dev_min < 1)
           sprintf_P(&mess[15], PSTR("0.%03i"), (int)LROUND(zero_std_dev_min * 1000.0f));
         else
