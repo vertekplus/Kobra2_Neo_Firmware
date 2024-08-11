@@ -143,25 +143,17 @@ char cmd[MAX_CMD_SIZE+16], str_1[16], str_2[16], str_3[16];
 
 void BedLevelToolsClass::manual_move(const uint8_t mesh_x, const uint8_t mesh_y, bool zmove/*=false*/) {
   gcode.process_subcommands_now(F("G28O"));
-  if (zmove) {
-    planner.synchronize();
-    current_position.z = goto_mesh_value ? bedlevel.z_values[mesh_x][mesh_y] : Z_CLEARANCE_BETWEEN_PROBES;
-    planner.buffer_line(current_position, homing_feedrate(Z_AXIS), active_extruder);
-    planner.synchronize();
+  if (!zmove) {
+    dwinShowPopup(ICON_BLTouch, F("Moving to Point"), F("Please wait until done."));
+    hmiSaveProcessID(ID_NothingToDo);
+    gcode.process_subcommands_now(TS(F("G0 F300 Z"), p_float_t(Z_CLEARANCE_BETWEEN_PROBES, 3)));
+    gcode.process_subcommands_now(TS(F("G42 F4000 I"), mesh_x, F(" J"), mesh_y));
   }
-  else {
-    DWIN_Show_Popup(ICON_BLTouch, F("Moving to Point"), F("Please wait until done."));
-    HMI_SaveProcessID(NothingToDo);
-    sprintf_P(cmd, PSTR("G0 F300 Z%s"), dtostrf(Z_CLEARANCE_BETWEEN_PROBES, 1, 3, str_1));
-    gcode.process_subcommands_now(cmd);
-    sprintf_P(cmd, PSTR("G42 F4000 I%i J%i"), mesh_x, mesh_y);
-    gcode.process_subcommands_now(cmd);
-    planner.synchronize();
-    current_position.z = goto_mesh_value ? bedlevel.z_values[mesh_x][mesh_y] : Z_CLEARANCE_BETWEEN_PROBES;
-    planner.buffer_line(current_position, homing_feedrate(Z_AXIS), active_extruder);
-    planner.synchronize();
-    HMI_ReturnScreen();
-  }
+  planner.synchronize();
+  current_position.z = goto_mesh_value ? bedlevel.z_values[mesh_x][mesh_y] : Z_CLEARANCE_BETWEEN_PROBES;
+  planner.buffer_line(current_position, homing_feedrate(Z_AXIS), active_extruder);
+  planner.synchronize();
+  if (!zmove) hmiReturnScreen();
 }
 
 // Move / Probe methods. As examples, not yet used.
