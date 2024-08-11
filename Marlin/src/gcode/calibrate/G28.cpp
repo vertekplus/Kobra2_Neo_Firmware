@@ -43,7 +43,9 @@
   #include "../../feature/tmc_util.h"
 #endif
 
-#include "../../module/probe.h"
+#if HAS_BED_PROBE
+  #include "../../module/probe.h"
+#endif
 
 #if ENABLED(BLTOUCH)
   #include "../../feature/bltouch.h"
