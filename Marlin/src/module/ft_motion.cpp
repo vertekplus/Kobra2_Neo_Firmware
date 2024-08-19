@@ -172,9 +172,19 @@ void FTMotion::loop() {
   if (!blockProcRdy) stepper.ftMotion_blockQueueUpdate();
 
   if (blockProcRdy) {
-    if (!blockProcRdy_z1) { // One-shot.
-      if (!blockDataIsRunout) loadBlockData(stepper.current_block);
-      else blockDataIsRunout = false;
+    if (!batchRdy) makeVector(); // Caution: Do not consolidate checks on blockProcRdy/batchRdy, as they are written by makeVector().
+    // When makeVector is finished: either blockProcRdy has been set false (because the block is
+    // done being processed) or batchRdy is set true, or both.
+
+    // Check if the block has been completely converted:
+    if (!blockProcRdy) {
+      discard_planner_block_protected();
+
+      // Check if the block needs to be runout:
+      if (!batchRdy && !planner.has_blocks_queued()) {
+        runoutBlock();
+        makeVector(); // Do an additional makeVector call to guarantee batchRdy set this loop.
+      }
     }
     while (!blockProcDn && !batchRdy && (makeVector_idx - makeVector_idx_z1 < (FTM_POINTS_PER_LOOP)))
       makeVector();
