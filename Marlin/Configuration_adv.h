@@ -1122,10 +1122,12 @@
  */
 //#define FT_MOTION
 #if ENABLED(FT_MOTION)
-  #define FTM_DEFAULT_MODE        ftMotionMode_DISABLED // Default mode of fixed time control. (Enums in ft_types.h)
-  #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (Enums in ft_types.h)
-  #define FTM_SHAPING_DEFAULT_X_FREQ   37.0f      // (Hz) Default peak frequency used by input shapers
-  #define FTM_SHAPING_DEFAULT_Y_FREQ   37.0f      // (Hz) Default peak frequency used by input shapers
+  //#define FTM_IS_DEFAULT_MOTION                 // Use FT Motion as the factory default?
+  #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (DISABLED, Z_BASED, MASS_BASED)
+  #define FTM_DEFAULT_SHAPER_X      ftMotionShaper_NONE // Default shaper mode on X axis (NONE, ZV, ZVD, ZVDD, ZVDDD, EI, 2HEI, 3HEI, MZV)
+  #define FTM_DEFAULT_SHAPER_Y      ftMotionShaper_NONE // Default shaper mode on Y axis
+  #define FTM_SHAPING_DEFAULT_FREQ_X   37.0f      // (Hz) Default peak frequency used by input shapers
+  #define FTM_SHAPING_DEFAULT_FREQ_Y   37.0f      // (Hz) Default peak frequency used by input shapers
   #define FTM_LINEAR_ADV_DEFAULT_ENA   false      // Default linear advance enable (true) or disable (false)
   #define FTM_LINEAR_ADV_DEFAULT_K      0.0f      // Default linear advance gain
   #define FTM_SHAPING_ZETA_X            0.1f      // Zeta used by input shapers for X axis

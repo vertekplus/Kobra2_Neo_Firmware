@@ -62,4 +62,26 @@ enum {
   FT_BIT_COUNT
 };
 
+#if HAS_FTM_SHAPING
+  #define NUM_AXES_SHAPED TERN(HAS_Y_AXIS, 2, 1)
+  #define SHAPED_ELEM(A, B) A OPTARG(HAS_Y_AXIS, B)
+#else
+  #define NUM_AXES_SHAPED 0
+  #define SHAPED_ELEM(A, B)
+#endif
+
+template<typename T>
+struct FTShapedAxes {
+  union {
+    struct { T SHAPED_ELEM(X, Y); };
+    struct { T SHAPED_ELEM(x, y); };
+    T val[NUM_AXES_SHAPED];
+  };
+  T& operator[](int i) { return val[i]; }
+};
+
+typedef FTShapedAxes<float>            ft_shaped_float_t;
+typedef FTShapedAxes<ftMotionShaper_t> ft_shaped_shaper_t;
+typedef FTShapedAxes<dynFreqMode_t>    ft_shaped_dfm_t;
+
 typedef bits_t(FT_BIT_COUNT) ft_command_t;
