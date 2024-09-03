@@ -458,8 +458,11 @@ void menu_move() {
     START_MENU();
     BACK_ITEM(MSG_MOTION);
 
-    SUBMENU(MSG_FTM_MODE, menu_ftm_mode);
-    MENU_ITEM_ADDON_START_RJ(5); lcd_put_u8str(ftmode); MENU_ITEM_ADDON_END();
+    bool show_state = c.active;
+    EDIT_ITEM(bool, MSG_FIXED_TIME_MOTION, &show_state, []{
+      ftMotion.cfg.active ^= true;
+      ftMotion.update_shaping_params();
+    });
 
     if (c.modeHasShaper()) {
       #if HAS_X_AXIS
