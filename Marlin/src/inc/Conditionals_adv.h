@@ -1328,7 +1328,12 @@
   #undef MANUAL_MOVE_DISTANCE_DEG
 #endif
 
-// Power-Loss Recovery
-#if ENABLED(POWER_LOSS_RECOVERY) && defined(PLR_BED_THRESHOLD)
-  #define HAS_PLR_BED_THRESHOLD 1
+// Only report "Not SD printing" when the state changes
+// To get legacy behavior define AUTO_REPORT_SD_STATUS 2
+#ifdef AUTO_REPORT_SD_STATUS
+  #if ENABLED(AUTO_REPORT_SD_STATUS) // Not blank, 1, or true
+    #define QUIETER_AUTO_REPORT_SD_STATUS
+  #endif
+  #undef AUTO_REPORT_SD_STATUS
+  #define AUTO_REPORT_SD_STATUS
 #endif
