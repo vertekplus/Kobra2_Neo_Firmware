@@ -52,15 +52,15 @@
 //#define FLASH_EEPROM_EMULATION
 //#define SDCARD_EEPROM_EMULATION
 
-#if EITHER(NO_EEPROM_SELECTED, I2C_EEPROM)
+#if ANY(NO_EEPROM_SELECTED, I2C_EEPROM)
   #define I2C_EEPROM                              // EEPROM on I2C-0
   #define MARLIN_EEPROM_SIZE              0x1000  // 4K
 #endif
 
 //
-// Note: MKS Robin board is using SPI2 interface.
+// SPI
 //
-#define SPI_DEVICE                             2
+#define SPI_DEVICE                             2  // Maple
 
 //
 // Servos
@@ -181,7 +181,7 @@
 #define HEATER_0_PIN                        PC3   // HEATER1
 #define HEATER_BED_PIN                      PA0   // HOT BED
 
-#define FAN_PIN                             PB1   // FAN
+#define FAN0_PIN                            PB1   // FAN
 
 //
 // Misc. Functions
@@ -253,7 +253,7 @@
 #endif
 
 #if SD_CONNECTION_IS(ONBOARD)
-  #define SDIO_SUPPORT
+  #define ONBOARD_SDIO
   #define SDIO_CLOCK                     4500000  // 4.5 MHz
   #define SD_DETECT_PIN                     PD12
   #define ONBOARD_SD_CS_PIN                 PC11
@@ -271,10 +271,27 @@
 //
 
 /**
- * Note: MKS Robin TFT screens use various TFT controllers.
- * If the screen stays white, disable 'LCD_RESET_PIN'
- * to let the bootloader init the screen.
+ * Note: MKS Robin TFT screens use various TFT controllers
+ * Supported screens are based on the ILI9341, ST7789V and ILI9328 (320x240)
+ * ILI9488 is not supported
+ * Define init sequences for other screens in u8g_dev_tft_320x240_upscale_from_128x64.cpp
+ *
+ * If the screen stays white, disable 'LCD_RESET_PIN' to let the bootloader init the screen.
+ *
+ * Setting an 'LCD_RESET_PIN' may cause a flicker when switching menus
+ * because Marlin uses the reset as a failsafe to revive a glitchy LCD.
  */
+
+#if ENABLED(TFT_SCALED_DOGLCD)
+  // Emulated DOGM SPI
+  #define LCD_PINS_EN                EXP1_03_PIN
+  #define LCD_PINS_RS                EXP1_04_PIN
+  #define BTN_ENC                    EXP1_02_PIN
+  #define BTN_EN1                    EXP2_03_PIN
+  #define BTN_EN2                    EXP2_05_PIN
+#elif ENABLED(HAS_GRAPHICAL_TFT)
+  #define TFT_BUFFER_WORDS                 14400
+#endif
 
 #if HAS_SPI_TFT
 
@@ -306,27 +323,16 @@
 
   #define LCD_USE_DMA_SPI
 
-#endif
+#elif HAS_WIRED_LCD
 
-#if ENABLED(TFT_CLASSIC_UI)
-  // Emulated DOGM SPI
-  #define LCD_PINS_ENABLE            EXP1_03_PIN
-  #define LCD_PINS_RS                EXP1_04_PIN
-  #define BTN_ENC                    EXP1_02_PIN
-  #define BTN_EN1                    EXP2_03_PIN
-  #define BTN_EN2                    EXP2_05_PIN
-#elif ENABLED(TFT_COLOR_UI)
-  #define TFT_BUFFER_SIZE                  14400
-#endif
-
-#if HAS_WIRED_LCD && !HAS_SPI_TFT
   #define BEEPER_PIN                 EXP1_01_PIN
+
   #define BTN_ENC                    EXP1_02_PIN
-  #define LCD_PINS_ENABLE            EXP1_03_PIN
-  #define LCD_PINS_RS                EXP1_04_PIN
   #define BTN_EN1                    EXP2_03_PIN
   #define BTN_EN2                    EXP2_05_PIN
-  #define LCD_BACKLIGHT_PIN                 -1
+
+  #define LCD_PINS_EN                EXP1_03_PIN
+  #define LCD_PINS_RS                EXP1_04_PIN
 
   #if ENABLED(MKS_MINI_12864)
 
@@ -367,7 +373,7 @@
     #endif
     //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
 
-  #else // !MKS_MINI_12864
+  #else // !FYSETC_MINI_12864_2_1
 
     #define LCD_PINS_D4              EXP1_05_PIN
     #if IS_ULTIPANEL
@@ -385,21 +391,21 @@
     #define BOARD_ST7920_DELAY_2             125
     #define BOARD_ST7920_DELAY_3             125
 
-  #endif // !MKS_MINI_12864
+  #endif // !FYSETC_MINI_12864_2_1
 
 #endif // HAS_WIRED_LCD && !HAS_SPI_TFT
+
+#ifndef BEEPER_PIN
+  #define BEEPER_PIN                 EXP1_01_PIN
+#endif
 
 #define SPI_FLASH
 #if ENABLED(SPI_FLASH)
   #define SPI_FLASH_SIZE               0x1000000  // 16MB
   #define SPI_FLASH_CS_PIN                  PB12
-  #define SPI_FLASH_MOSI_PIN                PB15
-  #define SPI_FLASH_MISO_PIN                PB14
   #define SPI_FLASH_SCK_PIN                 PB13
-#endif
-
-#ifndef BEEPER_PIN
-  #define BEEPER_PIN                 EXP1_01_PIN
+  #define SPI_FLASH_MISO_PIN                PB14
+  #define SPI_FLASH_MOSI_PIN                PB15
 #endif
 
 #if ENABLED(SPEAKER) && BEEPER_PIN == PC5
