@@ -40,7 +40,7 @@ MMU2 mmu2;
 #include "../../MarlinCore.h"
 
 #if ENABLED(HOST_PROMPT_SUPPORT)
-  #include "../../feature/host_actions.h"
+  #include "../host_actions.h"
 #endif
 
 #if ENABLED(EXTENSIBLE_UI)
