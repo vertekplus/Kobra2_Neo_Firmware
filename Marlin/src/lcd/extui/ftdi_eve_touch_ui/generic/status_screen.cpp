@@ -302,6 +302,31 @@ void StatusScreen::draw_interaction_buttons(draw_mode_t what) {
     const bool has_media = isMediaMounted() && !isPrintingFromMedia();
 
     CommandProcessor cmd;
+    if (ExtUI::isOngoingPrintJob() || ExtUI::isPrintingPaused()) {
+      cmd.colors(normal_btn)
+          .font(font_medium)
+          .tag(!ExtUI::isPrintingPaused() ? 17 : 18)
+          .button(TOOL_HEAD_POS, !ExtUI::isPrintingPaused() ? GET_TEXT_F(MSG_BUTTON_PAUSE) : GET_TEXT_F(MSG_BUTTON_RESUME))
+          .tag(!ExtUI::isPrintingPaused() ? 7 : 14)
+          .button(CHANGE_FILAMENT_POS, !ExtUI::isPrintingPaused() ? GET_TEXT_F(MSG_SPEED) : F(""));
+      #if HAS_FILAMENT_SENSOR
+        cmd.tag(8).button(PREHEAT_POS, GET_TEXT_F(MSG_SENSOR));
+      #endif
+      if (ExtUI::isPrintingPaused())
+        draw_text_box(cmd, CHANGE_FILAMENT_POS, F("Change\nFilament"), OPT_CENTER, font_medium);
+    }
+    else {
+      cmd.colors(normal_btn)
+          .font(font_medium)
+          .tag(14).button(CHANGE_FILAMENT_POS, F(""));
+          draw_text_box(cmd, CHANGE_FILAMENT_POS, F("Change\nFilament"), OPT_CENTER, font_medium);
+      cmd.colors(normal_btn)
+          .font(font_medium)
+          .tag(20).button(PREHEAT_POS, GET_TEXT_F(MSG_PREHEAT));
+      cmd.enabled(ENABLED(CUSTOM_MENU_MAIN)).tag(10).button(TOOL_HEAD_POS, F(""));
+      draw_text_box(cmd, TOOL_HEAD_POS, F("" CUSTOM_MENU_MAIN_TITLE "\n "), OPT_CENTER, font_medium);
+    }
+
     cmd.colors(normal_btn)
        .font(Theme::font_medium)
        .colors(has_media ? action_btn : normal_btn)
@@ -444,6 +469,48 @@ bool StatusScreen::onTouchEnd(uint8_t tag) {
       }
       break;
     case 7:  GOTO_SCREEN(FeedratePercentScreen); break;
+    #if HAS_FILAMENT_SENSOR
+      case 8:  GOTO_SCREEN(FilamentRunoutScreen); break;
+    #endif
+    case 9:  injectCommands(F("G28")); break;
+    #if ENABLED(CUSTOM_MENU_MAIN)
+      case 10:  GOTO_SCREEN(CustomUserMenus); break;
+    #endif
+    if (!ExtUI::isOngoingPrintJob()) {
+    case 11: injectCommands(F("G28X")); break;
+    case 12: injectCommands(F("G28Y")); break;
+    case 13: injectCommands(F("G28Z")); break;
+    }
+    case 14: GOTO_SCREEN(ChangeFilamentScreen);  break;
+    #if ALL(HAS_LEVELING, HAS_BED_PROBE)
+    case 15:
+      if (ExtUI::isOngoingPrintJob()|| ExtUI::isPrintingPaused()) {
+        #if EXTRUDERS > 1
+          GOTO_SCREEN(NudgeNozzleScreen); break;
+        #else
+          GOTO_SCREEN(ZOffsetScreen); break;
+        #endif
+      }
+      else {
+        coolDown();
+        TERN_(HAS_HEATED_CHAMBER, setTargetTemp_celsius(0, CHAMBER));
+        GOTO_SCREEN(StatusScreen);
+        break;
+      }
+    #endif
+    #ifdef PRESENT_BED_GCODE
+    case 16: injectCommands(F(PRESENT_BED_GCODE)); break;
+    #endif
+    case 17: injectCommands(F("M117 Print Paused")); pausePrint();  break;
+    case 18: injectCommands(F("M117 Print Resumed")); resumePrint(); break;
+    case 19:
+      GOTO_SCREEN(ConfirmAbortPrintDialogBox);
+      current_screen.forget();
+      PUSH_SCREEN(StatusScreen);
+      break;
+    #ifdef PREHEAT_1_COMMAND
+    case 20: injectCommands_P(PSTR(PREHEAT_1_COMMAND)); break;
+    #endif
     default:
       return true;
   }

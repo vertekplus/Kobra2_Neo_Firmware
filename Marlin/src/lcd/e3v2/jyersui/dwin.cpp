@@ -46,7 +46,7 @@
   #include "../../../feature/pause.h"
 #endif
 
-#if ENABLED(FILAMENT_RUNOUT_SENSOR)
+#if HAS_FILAMENT_SENSOR
   #include "../../../feature/runout.h"
 #endif
 
@@ -2860,7 +2860,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
       #define ADVANCED_LOAD (ADVANCED_LA + ENABLED(ADVANCED_PAUSE_FEATURE))
       #define ADVANCED_UNLOAD (ADVANCED_LOAD + ENABLED(ADVANCED_PAUSE_FEATURE))
       #define ADVANCED_COLD_EXTRUDE  (ADVANCED_UNLOAD + ENABLED(PREVENT_COLD_EXTRUSION))
-      #define ADVANCED_FILSENSORENABLED (ADVANCED_COLD_EXTRUDE + ENABLED(FILAMENT_RUNOUT_SENSOR))
+      #define ADVANCED_FILSENSORENABLED (ADVANCED_COLD_EXTRUDE + ENABLED(HAS_FILAMENT_SENSOR))
       #define ADVANCED_FILSENSORDISTANCE (ADVANCED_FILSENSORENABLED + ENABLED(HAS_FILAMENT_RUNOUT_DISTANCE))
       #define ADVANCED_POWER_LOSS (ADVANCED_FILSENSORDISTANCE + ENABLED(POWER_LOSS_RECOVERY))
       #define ADVANCED_TOTAL ADVANCED_POWER_LOSS
@@ -2956,7 +2956,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
             break;
         #endif
 
-        #if ENABLED(FILAMENT_RUNOUT_SENSOR)
+        #if HAS_FILAMENT_SENSOR
           case ADVANCED_FILSENSORENABLED:
             if (draw) {
               Draw_Menu_Item(row, ICON_Extruder, F("Filament Sensor"));
@@ -2978,7 +2978,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
                 Modify_Value(runout.runout_distance(), 0, 999, 10);
               break;
           #endif
-        #endif // FILAMENT_RUNOUT_SENSOR
+        #endif // HAS_FILAMENT_SENSOR
 
         #if ENABLED(POWER_LOSS_RECOVERY)
           case ADVANCED_POWER_LOSS:
@@ -3839,8 +3839,10 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
       #define TUNE_ZOFFSET (TUNE_FAN + ENABLED(HAS_ZOFFSET_ITEM))
       #define TUNE_ZUP (TUNE_ZOFFSET + ENABLED(HAS_ZOFFSET_ITEM))
       #define TUNE_ZDOWN (TUNE_ZUP + ENABLED(HAS_ZOFFSET_ITEM))
-      #define TUNE_CHANGEFIL (TUNE_ZDOWN + ENABLED(FILAMENT_LOAD_UNLOAD_GCODES))
-      #define TUNE_FILSENSORENABLED (TUNE_CHANGEFIL + ENABLED(FILAMENT_RUNOUT_SENSOR))
+      #define TUNE_LA (TUNE_ZDOWN + ENABLED(LIN_ADVANCE))
+      #define TUNE_CHANGEFIL (TUNE_LA + ENABLED(FILAMENT_LOAD_UNLOAD_GCODES))
+      #define TUNE_FWRETRACT (TUNE_CHANGEFIL + ENABLED(FWRETRACT))
+      #define TUNE_FILSENSORENABLED (TUNE_FWRETRACT + ENABLED(HAS_FILAMENT_SENSOR))
       #define TUNE_BACKLIGHT_OFF (TUNE_FILSENSORENABLED + 1)
       #define TUNE_BACKLIGHT (TUNE_BACKLIGHT_OFF + 1)
       #define TUNE_TOTAL TUNE_BACKLIGHT
@@ -3940,7 +3942,7 @@ void CrealityDWINClass::Menu_Item_Handler(const uint8_t menu, const uint8_t item
             break;
         #endif
 
-        #if ENABLED(FILAMENT_RUNOUT_SENSOR)
+        #if HAS_FILAMENT_SENSOR
           case TUNE_FILSENSORENABLED:
             if (draw) {
               Draw_Menu_Item(row, ICON_Extruder, F("Filament Sensor"));
@@ -4239,11 +4241,17 @@ void CrealityDWINClass::Popup_Handler(const PopupID popupid, const bool option/*
     case Popup_FilLoad:       drawPopup(option ? F("Unloading Filament") : F("Loading Filament"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
     case Popup_FilChange:     drawPopup(F("Filament Change"), F("Please wait for prompt."), F(""), Proc_Wait, ICON_BLTouch); break;
     case Popup_TempWarn:      drawPopup(option ? F("Nozzle temp too low!") : F("Nozzle temp too high!"), F(""), F(""), Proc_Wait, option ? ICON_TempTooLow : ICON_TempTooHigh); break;
-    case Popup_Runout:        drawPopup(F("Filament Runout"), F(""), F(""), Proc_Wait, ICON_BLTouch); break;
-    case Popup_PIDWait:       drawPopup(F("PID Autotune"), F("in process"), F("Please wait until done."), Proc_Wait, ICON_BLTouch); break;
-    case Popup_MPCWait:       drawPopup(F("MPC Autotune"), F("in process"), F("Please wait until done."), Proc_Wait, ICON_BLTouch); break;
-    case Popup_Resuming:      drawPopup(F("Resuming Print"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
-    case Popup_Custom:        drawPopup(F("Running Custom G-Code"), F("Please wait until done."), F(""), Proc_Wait, ICON_BLTouch); break;
+    #if HAS_FILAMENT_SENSOR
+      case Popup_Runout:      drawPopup(F("Filament Runout"), F(""), F(""), Proc_Wait, ICON_BLTouch); break;
+    #endif
+    #if ANY(PIDTEMP, PIDTEMPBED)
+      case Popup_PIDWait:     drawPopup(GET_TEXT_F(MSG_PID_AUTOTUNE), F("in progress"), PWID, Proc_Wait, ICON_BLTouch); break;
+    #endif
+    #if ENABLED(MPC_AUTOTUNE_MENU)
+      case Popup_MPCWait:     drawPopup(GET_TEXT_F(MSG_MPC_AUTOTUNE), F("in progress"), PWID, Proc_Wait, ICON_BLTouch); break;
+    #endif
+    case Popup_Resuming:      drawPopup(F("Resuming Print"), PWID, F(""), Proc_Wait, ICON_BLTouch); break;
+    case Popup_Custom:        drawPopup(F("Running Custom G-Code"), PWID, F(""), Proc_Wait, ICON_BLTouch); break;
     default: break;
   }
 }
@@ -4863,7 +4871,7 @@ void CrealityDWINClass::State_Update() {
       }
     }
   #endif
-  #if ENABLED(FILAMENT_RUNOUT_SENSOR)
+  #if HAS_FILAMENT_SENSOR
     static bool ranout = false;
     if (runout.filament_ran_out != ranout) {
       ranout = runout.filament_ran_out;
