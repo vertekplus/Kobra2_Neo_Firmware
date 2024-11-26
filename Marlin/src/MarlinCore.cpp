@@ -1255,7 +1255,7 @@ void setup() {
   	SERIAL_ECHOLNPGM("get_state_original:",runout.get_state_original());
   #endif
 
-  #if HAS_TMC220x
+  #if HAS_TMC_UART
     SETUP_RUN(tmc_serial_begin());
   #endif
 
