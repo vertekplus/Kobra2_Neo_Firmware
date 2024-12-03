@@ -38,12 +38,12 @@
 #define BOARD_WEBSITE_URL    "github.com/makerbase-mks/MKS-TinyBee"
 #define DEFAULT_MACHINE_NAME BOARD_INFO_NAME
 
-// MAX_EXPANDER_BITS is defined for MKS TinyBee in HAL/ESP32/inc/Conditionals_adv.h
+// MAX_EXPANDER_BITS is defined for MKS TinyBee in HAL/ESP32/inc/Conditionals-4-adv.h
 
 //
 // Servos
 //
-#define SERVO0_PIN                             2  // 3D TOUCH
+#define SERVO0_PIN                             2  // 3D TOUCH, Pin is level-shifted to 5V, and cannot be used as an INPUT pin!
 
 //
 // Limit Switches
@@ -64,7 +64,9 @@
 //
 // Enable I2S stepper stream
 //
-#define I2S_STEPPER_STREAM
+#ifndef I2S_STEPPER_STREAM
+  #define I2S_STEPPER_STREAM
+#endif
 #if ENABLED(I2S_STEPPER_STREAM)
   #define I2S_WS                              26
   #define I2S_BCK                             25
@@ -106,7 +108,7 @@
 //
 #define HEATER_0_PIN                         145  // HE0
 #define HEATER_1_PIN                         146  // HE1
-#define FAN_PIN                             147  // FAN1
+#define FAN0_PIN                             147  // FAN1
 #define FAN1_PIN                             148  // FAN2
 #define HEATER_BED_PIN                       144  // H-BED
 
@@ -119,14 +121,17 @@
 #define ADC_REFERENCE_VOLTAGE                  2.565  // 2.5V reference VDDA
 
 /**
- *                ------                                 ------
- *  (BEEPER) 149 | 1  2 | 13 (BTN_ENC)    (SPI MISO) 19 | 1  2 | 18 (SPI SCK)
- *  (LCD_EN)  21 | 3  4 |  4 (LCD_RS)      (BTN_EN1) 14 | 3  4 |  5 (SPI CS)
- *  (LCD_D4)   0   5  6 | 16 (LCD_D5)      (BTN_EN2) 12   5  6 | 23 (SPI MOSI)
- *  (LCD_D6)  15 | 7  8 | 17 (LCD_D7)      (SPI_DET) 34 | 7  8 | RESET
- *           GND | 9 10 | 5V                        GND | 9 10 | 3.3V
- *                ------                                 ------
- *                 EXP1                                   EXP2
+ *                 ------                                 ------
+ *  (BEEPER)  149 | 1  2 | 13  (BTN_ENC)   (SPI MISO) 19 | 1  2 | 18 (SPI SCK)
+ *  (LCD_EN)  21* | 3  4 |  4* (LCD_RS)     (BTN_EN1) 14 | 3  4 |  5 (SPI CS)
+ *  (LCD_D4)   0* | 5  6   16* (LCD_D5)     (BTN_EN2) 12 | 5  6   23 (SPI MOSI)
+ *  (LCD_D6)  15* | 7  8 | 17* (LCD_D7)     (SPI_DET) 34 | 7  8 | RESET
+ *            GND | 9 10 | 5V                        GND | 9 10 | 3.3V
+ *                 ------                                 ------
+ *                  EXP1                                   EXP2
+ *
+ * * = Note: Pin is level-shifted to 5V. Cannot be used as an INPUT pin!
+ *           Displays like a CR10_STOCKDISPLAY that require inputs on EXP1 cannot be plugged straight into this board.
  */
 
 #define EXP1_01_PIN                          149
@@ -153,13 +158,15 @@
 //#define SD_MOSI_PIN                EXP2_06_PIN  // uses esp32 default 23
 //#define SD_MISO_PIN                EXP2_01_PIN  // uses esp32 default 19
 //#define SD_SCK_PIN                 EXP2_02_PIN  // uses esp32 default 18
+
+// TODO: Migrate external SD Card to pins/lcd
 #define SDSS                         EXP2_04_PIN
 #define SD_DETECT_PIN                EXP2_07_PIN  // IO34 default is SD_DET signal (Jump to SDDET)
 #define USES_SHARED_SPI                           // SPI is shared by SD card with TMC SPI drivers
 
 #if HAS_WIRED_LCD
   #define BEEPER_PIN                 EXP1_01_PIN
-  #define LCD_PINS_ENABLE            EXP1_03_PIN
+  #define LCD_PINS_EN                EXP1_03_PIN
   #define LCD_PINS_RS                EXP1_04_PIN
   #define BTN_ENC                    EXP1_02_PIN
   #define BTN_EN1                    EXP2_03_PIN
@@ -180,7 +187,7 @@
     #if SD_CONNECTION_IS(ONBOARD)
       #define FORCE_SOFT_SPI
     #endif
-    #if BOTH(MKS_MINI_12864_V3, SDSUPPORT)
+    #if ALL(MKS_MINI_12864_V3, HAS_MEDIA)
       #define PAUSE_LCD_FOR_BUSY_SD
     #endif
   #else
