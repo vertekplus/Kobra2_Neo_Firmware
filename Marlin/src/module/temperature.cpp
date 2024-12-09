@@ -3525,7 +3525,10 @@ void Temperature::update_raw_temperatures() {
     temp_redundant.update();
   #endif
 
-  TERN_(HAS_TEMP_ADC_2,       temp_hotend[2].update());
+  #if HAS_TEMP_ADC_BED && !TEMP_SENSOR_IS_MAX_TC(BED)
+    temp_bed.update();
+  #endif
+
   TERN_(HAS_TEMP_ADC_3,       temp_hotend[3].update());
   TERN_(HAS_TEMP_ADC_4,       temp_hotend[4].update());
   TERN_(HAS_TEMP_ADC_5,       temp_hotend[5].update());
