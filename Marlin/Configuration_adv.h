@@ -1019,7 +1019,7 @@
 
 #endif // BLTOUCH
 
-// @section extras
+// @section calibrate
 
 /**
  * Z Steppers Auto-Alignment
