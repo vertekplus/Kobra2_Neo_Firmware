@@ -36,11 +36,13 @@
   #include "../../module/probe.h"
 #endif
 
-#if HAS_GRAPHICAL_TFT
+#if ENABLED(BABYSTEP_ZPROBE_OFFSET)
+  #include "../../feature/babystep.h"
+#endif
+
+#if ALL(TOUCH_SCREEN, HAS_GRAPHICAL_TFT)
   #include "../tft/tft.h"
-  #if ENABLED(TOUCH_SCREEN)
-    #include "../tft/touch.h"
-  #endif
+  #include "../tft/touch.h"
 #endif
 
 #if EITHER(PROBE_MANUALLY, MESH_BED_LEVELING)
