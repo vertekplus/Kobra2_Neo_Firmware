@@ -47,7 +47,11 @@
   #include "../../../../feature/powerloss.h"
 #endif
 
-#if ENABLED(SDSUPPORT)
+#if ENABLED(DGUS_MKS_RUNOUT_SENSOR)
+  #define FILAMENT_IS_OUT(N...) (READ(FIL_RUNOUT##N##_PIN) == FIL_RUNOUT##N##_STATE)
+#endif
+
+#if HAS_MEDIA
   extern ExtUI::FileList filelist;
 #endif
 
@@ -1365,9 +1369,9 @@ void DGUSScreenHandlerMKS::DGUS_ExtrudeLoadInit() {
   ex_filament.ex_tick_start       = 0;
 }
 
-void DGUSScreenHandlerMKS::DGUS_RunoutInit() {
-  #if PIN_EXISTS(MT_DET_1)
-    SET_INPUT_PULLUP(MT_DET_1_PIN);
+void DGUSScreenHandlerMKS::runoutInit() {
+  #if ENABLED(DGUS_MKS_RUNOUT_SENSOR) && PIN_EXISTS(FIL_RUNOUT)
+    SET_INPUT_PULLUP(FIL_RUNOUT_PIN);
   #endif
   runout_mks.de_count      = 0;
   runout_mks.de_times      = 10;
@@ -1391,17 +1395,17 @@ void DGUSScreenHandlerMKS::DGUS_Runout_Idle() {
         break;
 
       case UNRUNOUT_STATUS:
-        if (READ(MT_DET_1_PIN) == MT_DET_PIN_STATE)
+        if (FILAMENT_IS_OUT())
           runout_mks.runout_status = RUNOUT_STATUS;
         break;
 
       case RUNOUT_BEGIN_STATUS:
-        if (READ(MT_DET_1_PIN) != MT_DET_PIN_STATE)
+        if (!FILAMENT_IS_OUT())
           runout_mks.runout_status = RUNOUT_WAITING_STATUS;
         break;
 
       case RUNOUT_WAITING_STATUS:
-        if (READ(MT_DET_1_PIN) == MT_DET_PIN_STATE)
+        if (FILAMENT_IS_OUT())
           runout_mks.runout_status = RUNOUT_BEGIN_STATUS;
         break;
 

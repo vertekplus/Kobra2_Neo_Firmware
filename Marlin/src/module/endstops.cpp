@@ -686,18 +686,12 @@ void __O2 Endstops::report_states() {
     print_es_state(PROBE_TRIGGERED(), F(STR_Z_PROBE));
   #endif
   #if MULTI_FILAMENT_SENSOR
-    #define _CASE_RUNOUT(N) case N: pin = FIL_RUNOUT##N##_PIN; state = FIL_RUNOUT##N##_STATE; break;
-    LOOP_S_LE_N(i, 1, NUM_RUNOUT_SENSORS) {
-      pin_t pin;
-      uint8_t state;
-      switch (i) {
-        default: continue;
-        REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_RUNOUT)
-      }
-      SERIAL_ECHOPGM(STR_FILAMENT);
-      if (i > 1) SERIAL_CHAR(' ', '0' + i);
-      print_es_state(extDigitalRead(pin) != state);
-    }
+    #define _CASE_RUNOUT(N) do{ \
+      SERIAL_ECHO(F(STR_FILAMENT)); \
+      if ((N) > 1) SERIAL_CHAR(' ', '0' + char(N)); \
+      print_es_state(!FILAMENT_IS_OUT(N)); \
+    }while(0);
+    REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_RUNOUT)
     #undef _CASE_RUNOUT
   #elif HAS_FILAMENT_SENSOR
     print_es_state(!FILAMENT_IS_OUT(), F(STR_FILAMENT));
