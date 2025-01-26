@@ -475,13 +475,13 @@ void CardReader::mount() {
   ui.refresh();
 }
 
-/**
- * Handle SD card events
- */
 #if MB(FYSETC_CHEETAH, FYSETC_AIO_II)
   #include "../module/stepper.h"
 #endif
 
+/**
+ * Handle SD card events
+ */
 void CardReader::manage_media() {
   static uint8_t prev_stat = 2;     // At boot we don't know if media is present or not
   uint8_t stat = uint8_t(IS_SD_INSERTED());
@@ -603,6 +603,10 @@ void CardReader::abortFilePrintNow(TERN_(SD_RESORT, const bool re_sort/*=false*/
   endFilePrintNow(TERN_(SD_RESORT, re_sort));
 }
 
+/**
+ * Open a log file for writing, if possible.
+ * Used by G-code M928 <path>.
+ */
 void CardReader::openLogFile(const char * const path) {
   flag.logging = DISABLED(SDCARD_READONLY);
   IF_DISABLED(SDCARD_READONLY, openFileWrite(path));
@@ -631,10 +635,16 @@ void CardReader::getAbsFilenameInCWD(char *dst) {
   *dst = '\0';
 }
 
+//
+// Print "open failed, File: : <filename>.\n" to serial
+//
 void openFailed(const char * const fname) {
   SERIAL_ECHOLNPGM(STR_SD_OPEN_FILE_FAIL, fname, ".");
 }
 
+//
+// Print "echo: Now doing/fresh file: <filepath>\n" to all serial ports
+//
 void announceOpen(const uint8_t doing, const char * const path) {
   if (doing) {
     PORT_REDIRECT(SerialMask::All);
@@ -645,14 +655,14 @@ void announceOpen(const uint8_t doing, const char * const path) {
   }
 }
 
-//
-// Open a file by DOS path for read
-// The 'subcall_type' flag indicates...
-//   - 0 : Standard open from host or user interface.
-//   - 1 : (file open) Opening a new sub-procedure.
-//   - 1 : (no file open) Opening a macro (M98).
-//   - 2 : Resuming from a sub-procedure
-//
+/**
+ * Open a file by DOS path for read
+ * The 'subcall_type' flag indicates...
+ *   - 0 : Standard open from host or user interface.
+ *   - 1 : (file open) Opening a new sub-procedure.
+ *   - 1 : (no file open) Opening a macro (M98).
+ *   - 2 : Resuming from a sub-procedure
+ */
 void CardReader::openFileRead(const char * const path, const uint8_t subcall_type/*=0*/) {
   if (!isMounted()) return openFailed(path);
 
@@ -715,6 +725,9 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
     openFailed(fname);
 }
 
+//
+// Print "Writing to file: <filename>\n" to serial
+//
 inline void echo_write_to_file(const char * const fname) {
   SERIAL_ECHOLNPGM(STR_SD_WRITE_TO_FILE, fname);
 }
@@ -748,10 +761,10 @@ void CardReader::openFileWrite(const char * const path) {
   openFailed(fname);
 }
 
-//
-// Check if a file exists by absolute or workDir-relative path
-// If the file exists, the long name can also be fetched.
-//
+/**
+ * Check if a file exists by absolute or workDir-relative path
+ * If the file exists, the long name can also be fetched.
+ */
 bool CardReader::fileExists(const char * const path) {
   if (!isMounted()) return false;
 
@@ -818,6 +831,9 @@ void CardReader::report_status(TERN_(QUIETER_AUTO_REPORT_SD_STATUS, const bool i
     SERIAL_ECHOLNPGM(STR_SD_NOT_PRINTING);
 }
 
+//
+// Write a command to the log file
+//
 void CardReader::write_command(char * const buf) {
   char *begin = buf,
        *npos = nullptr,
@@ -879,16 +895,95 @@ void CardReader::write_command(char * const buf) {
   }
 #endif
 
+#if ENABLED(ONE_CLICK_PRINT)
+
+  /**
+   * Select the newest file and ask the user if they want to print it.
+   */
+  bool CardReader::one_click_check() {
+    const bool found = selectNewestFile();    // Changes the current workDir if found
+    if (found) {
+      //SERIAL_ECHO_MSG(" OCP File: ", longest_filename(), "\n");
+      //ui.init();
+      one_click_print();                      // Restores workkDir to root (eventually)
+    }
+    return found;
+  }
+
+  /**
+   * Recurse the entire directory to find the newest file.
+   * This may take a very long time so watch out for watchdog reset.
+   * It may be best to only look at root for reasonable boot and mount times.
+   */
+  void CardReader::diveToNewestFile(MediaFile parent, uint32_t &compareDateTime, MediaFile &outdir, char * const outname) {
+    // Iterate the given parent dir
+    parent.rewind();
+    for (dir_t p; parent.readDir(&p, longFilename) > 0;) {
+
+      // If the item is a dir, recurse into it
+      if (DIR_IS_SUBDIR(&p)) {
+        // Get the name of the dir for opening
+        char dirname[FILENAME_LENGTH];
+        createFilename(dirname, p);
+
+        // Open the item in a new MediaFile
+        MediaFile child; // child.close() in destructor
+        if (child.open(&parent, dirname, O_READ))
+          diveToNewestFile(child, compareDateTime, outdir, outname);
+      }
+      else if (is_visible_entity(p)) {
+        // Get the newer of the modified/created date and time
+        const uint32_t modDateTime = uint32_t(p.lastWriteDate) << 16 | p.lastWriteTime,
+                    createDateTime = uint32_t(p.creationDate) << 16 | p.creationTime,
+                     newerDateTime = _MAX(modDateTime, createDateTime);
+        // If a newer item is found overwrite the outdir and outname
+        if (newerDateTime > compareDateTime) {
+          compareDateTime = newerDateTime;
+          outdir = parent;
+          createFilename(outname, p);
+        }
+      }
+    }
+  }
+
+  /**
+   * Recurse the entire directory to find the newest file.
+   * Make the found file the current selection.
+   */
+  bool CardReader::selectNewestFile() {
+    uint32_t dateTimeStorage = 0;
+    MediaFile foundDir;
+    char foundName[FILENAME_LENGTH];
+    foundName[0] = '\0';
+
+    diveToNewestFile(root, dateTimeStorage, foundDir, foundName);
+
+    if (foundName[0]) {
+      workDir = foundDir;
+      workDir.rewind();
+      selectByName(workDir, foundName);
+      //workDir.close(); // Not needed?
+      return true;
+    }
+    return false;
+  }
+
+#endif // ONE_CLICK_PRINT
+
+//
+// Close the working file.
+//
 void CardReader::closefile(const bool store_location/*=false*/) {
   file.sync();
   file.close();
   flag.saving = flag.logging = false;
   sdpos = 0;
+
   TERN_(EMERGENCY_PARSER, emergency_parser.enable());
 
   if (store_location) {
-    //future: store printer state, filename and position for continuing a stopped print
-    // so one can unplug the printer and continue printing the next day.
+    // TODO: Store printer state, filename, position
+    // for continuing a stopped print.
   }
 }
 
@@ -1031,6 +1126,9 @@ const char* CardReader::diveToFile(const bool update_cwd, MediaFile* &inDirPtr, 
   return atom_ptr;
 }
 
+//
+// Change the working directory to the given sub-path
+//
 void CardReader::cd(const char * relpath) {
   MediaFile newDir, *parent = &getWorkDir();
 
@@ -1046,6 +1144,9 @@ void CardReader::cd(const char * relpath) {
     SERIAL_ECHO_MSG(STR_SD_CANT_ENTER_SUBDIR, relpath);
 }
 
+//
+// Change the working directory to its parent
+//
 int8_t CardReader::cdup() {
   if (workDirDepth > 0) {                                               // At least 1 dir has been saved
     nrItems = -1;
@@ -1056,6 +1157,9 @@ int8_t CardReader::cdup() {
   return workDirDepth;
 }
 
+//
+// Change the working directory to the volume root
+//
 void CardReader::cdroot() {
   workDir = root;
   flag.workDirIsRoot = true;
@@ -1298,6 +1402,9 @@ void CardReader::cdroot() {
 
 #endif // SDCARD_SORT_ALPHA
 
+//
+// Return the count of visible items in the working directory.
+//
 int16_t CardReader::get_num_items() {
   if (!isMounted()) return 0;
   if (nrItems < 0) nrItems = countVisibleItems(workDir);
@@ -1305,10 +1412,11 @@ int16_t CardReader::get_num_items() {
 }
 
 //
-// Return from procedure or close out the Print Job
+// Return from procedure or close out the Print Job.
 //
 void CardReader::fileHasFinished() {
   file.close();
+
   #if HAS_MEDIA_SUBCALLS
     if (file_subcall_ctr > 0) { // Resume calling file after closing procedure
       file_subcall_ctr--;
