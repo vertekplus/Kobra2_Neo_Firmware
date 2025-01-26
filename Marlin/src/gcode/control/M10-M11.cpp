@@ -30,15 +30,15 @@
 /**
  * M10: Vacuum or Blower On
  */
-void GcodeSuite::M10() {
-  cutter.air_evac_enable();   // Turn on Vacuum or Blower motor
-}
-
-/**
- * M11: Vacuum or Blower OFF
- */
-void GcodeSuite::M11() {
-  cutter.air_evac_disable();  // Turn off Vacuum or Blower motor
-}
-
-#endif // AIR_EVACUATION
+#ifndef SD_SCK_PIN
+  #define SD_SCK_PIN  PIN_SPI_SCK
+#endif
+#ifndef SD_MISO_PIN
+  #define SD_MISO_PIN PIN_SPI_MISO
+#endif
+#ifndef SD_MOSI_PIN
+  #define SD_MOSI_PIN PIN_SPI_MOSI
+#endif
+#ifndef SD_SS_PIN
+  #define SD_SS_PIN   PIN_SPI_SS
+#endif
