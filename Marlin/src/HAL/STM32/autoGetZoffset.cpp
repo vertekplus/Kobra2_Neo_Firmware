@@ -279,11 +279,15 @@ bool AutoProbe::run_calibration_probe()
 
 		LeveingTipStatus = 0x02;
 		do_blocking_move_to_xy(X_MIN_POS,Y_MIN_POS,40);
-		//Load the  filament and retract 
-		thermalManager.set_fan_speed(0, 0);
-		thermalManager.setTargetHotend(0, 0);
- 		unscaled_e_move(LOAD_LENGTH,LOAD_SPEED);
-		unscaled_e_move(-UNLOAD_LENGTH,UNLOAD_SPEED);
+		
+		bool enable_filament_purge_on_calibration = false; // Toggle purge during ABL
+
+		if (enable_filament_purge_on_calibration) {
+			thermalManager.set_fan_speed(0, 0);
+    		thermalManager.setTargetHotend(0, 0);
+    		unscaled_e_move(LOAD_LENGTH, LOAD_SPEED);
+    		unscaled_e_move(-UNLOAD_LENGTH, UNLOAD_SPEED);
+		}
 		//open fan and cool nozzle
 		thermalManager.set_fan_speed(0, 0);
 		thermalManager.setTargetHotend(0, 0);

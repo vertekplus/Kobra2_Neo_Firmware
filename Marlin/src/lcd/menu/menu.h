@@ -28,7 +28,7 @@
 #include "limits.h"
 
 #define DEVICE_NAME             "Anycubic Kobra 2 Neo"
-#define FIRMWARE_VER            "V1.5.6.3"
+#define FIRMWARE_VER            "V1.0.2"
 #define BUILD_VOLUME            "220*220*250 (mm)"
 #define TECH_SUPPORT            "https://www.anycubic.com"
 

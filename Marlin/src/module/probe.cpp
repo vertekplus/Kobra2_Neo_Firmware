@@ -728,7 +728,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
     // Attempt to tare the probe
     if (TERN0(PROBE_TARE, tare())) return NAN;
-    thermalManager.set_fan_speed(0, 0);
+    #if ENABLED(PROBING_PART_COOLING_FAN)
+      thermalManager.set_fan_speed(0, 0);
+    #endif
     // Do a first probe at the fast speed
     if (try_to_probe(PSTR("FAST"), z_probe_low_point, z_probe_fast_mm_s,
                      sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
@@ -737,7 +739,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("1st Probe Z:", first_probe_z);
 	  #if ENABLED(LEVEING_CALIBRATION_MODULE)
-      thermalManager.set_fan_speed(0, 255);
+      #if ENABLED(PROBING_PART_COOLING_FAN)
+        thermalManager.set_fan_speed(0, 255);
+      #endif
 		  autoProbe.run_z_mm(RUN_DOWN_MM,1);
 	  #endif
     // Raise to give the probe clearance
@@ -772,7 +776,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
     {
       // If the probe won't tare, return
       if (TERN0(PROBE_TARE, tare())) return true;
-      thermalManager.set_fan_speed(0, 0);
+      #if ENABLED(PROBING_PART_COOLING_FAN)
+        thermalManager.set_fan_speed(0, 0);
+      #endif
       // Probe downward slowly to find the bed
       if (try_to_probe(PSTR("SLOW"), z_probe_low_point, MMM_TO_MMS(Z_PROBE_FEEDRATE_SLOW),
                        sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
@@ -834,7 +840,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
     if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("2nd Probe Z:", z2, " Discrepancy:", first_probe_z - z2);
 	  #if ENABLED(LEVEING_CALIBRATION_MODULE)
-      thermalManager.set_fan_speed(0, 255);
+      #if ENABLED(PROBING_PART_COOLING_FAN)
+        thermalManager.set_fan_speed(0, 255);
+      #endif
 		 autoProbe.run_z_mm(RUN_DOWN_MM,2);
 	  #endif
 	    #define DIFF 0.1
@@ -843,7 +851,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 	  	do_blocking_move_to_z(current_position.z + Z_CLEARANCE_MULTI_PROBE, z_probe_fast_mm_s);
 
 		  if (TERN0(PROBE_TARE, tare())) return NAN;
-    	thermalManager.set_fan_speed(0, 0);
+      #if ENABLED(PROBING_PART_COOLING_FAN)
+    	  thermalManager.set_fan_speed(0, 0);
+      #endif
     	// Do a first probe at the fast speed
     	if (try_to_probe(PSTR("EXTRA"), z_probe_low_point, z_probe_fast_mm_s,
             sanity_check, Z_CLEARANCE_BETWEEN_PROBES) ) return NAN;
@@ -852,7 +862,9 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
 		  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("extra nd Probe Z:", z3, " Discrepancy:", first_probe_z - z3);
 	  		#if ENABLED(LEVEING_CALIBRATION_MODULE)
-      			thermalManager.set_fan_speed(0, 255);
+          #if ENABLED(PROBING_PART_COOLING_FAN)
+      			  thermalManager.set_fan_speed(0, 255);
+          #endif
 		 		    autoProbe.run_z_mm(RUN_DOWN_MM,2);
 	  		#endif
 			  const float extera_measured_z = (z3 * 3.0 + first_probe_z * 2.0) * 0.2;
@@ -915,11 +927,15 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
 
   if (probe_relative) npos -= offset_xy;  // Get the nozzle position
 
-  thermalManager.set_fan_speed(0, 255);
+  #if ENABLED(PROBING_PART_COOLING_FAN)
+    thermalManager.set_fan_speed(0, 255);
+  #endif
   // Move the probe to the starting XYZ
   do_blocking_move_to(npos, feedRate_t(XY_PROBE_FEEDRATE_MM_S));
 
-  thermalManager.set_fan_speed(0, 0);
+  #if ENABLED(PROBING_PART_COOLING_FAN)
+    thermalManager.set_fan_speed(0, 0);
+  #endif
 
   #if ENABLED(BD_SENSOR)
     return current_position.z - bdl.read(); // Difference between Z-home-relative Z and sensor reading
@@ -932,7 +948,9 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
     TERN_(X_AXIS_TWIST_COMPENSATION, measured_z += xatc.compensation(npos + offset_xy));
   }
   if (!isnan(measured_z)) {
-    thermalManager.set_fan_speed(0, 255);
+    #if ENABLED(PROBING_PART_COOLING_FAN)
+      thermalManager.set_fan_speed(0, 255);
+    #endif
     const bool big_raise = raise_after == PROBE_PT_BIG_RAISE;
     if (big_raise || raise_after == PROBE_PT_RAISE)
       do_blocking_move_to_z(current_position.z + (big_raise ? 25 : Z_CLEARANCE_BETWEEN_PROBES), z_probe_fast_mm_s);

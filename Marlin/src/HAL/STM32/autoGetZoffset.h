@@ -17,7 +17,7 @@
 #define DEVIATION   -0.1      
 #define SWTICH_DEVIATION   -0.1 
  
-#define NOZZLE_TEMP 			220 		
+#define NOZZLE_TEMP 		190 		
 #define NOZZLE_COOL_TEMP 	140 			
 
 #define LOAD_LENGTH   		120		//load length
