@@ -4,11 +4,11 @@ Custom Marlin firmware variants for the Anycubic Kobra 2 Neo focused on OctoPrin
 
 ## Firmware Variants
 - 1.0.0: Stock printer firmware with added OctoPrint stability (based on @that-ambuj guide).
-  - README: `FW No Purge on ABL, Octoprint Fix/1.0.0/README.md`
+  - README: `1.0.0/README.md`
 - 1.0.1: Removes ABL purge by gating purge moves behind a toggle.
-  - README: `FW No Purge on ABL, Octoprint Fix/1.0.1/README.md`
+  - README: `1.0.1/README.md`
 - 1.0.2: Adds `PROBING_PART_COOLING_FAN` flag to prevent part cooling fan toggles during probing and updates version/author strings.
-  - README: `FW No Purge on ABL, Octoprint Fix/1.0.2/README.md`
+  - README: `1.0.2/README.md`
 
 ## Key Changes
 - MEATPACK enabled for smoother serial streaming.
