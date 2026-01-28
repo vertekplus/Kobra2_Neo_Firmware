@@ -330,9 +330,16 @@ void menu_main() {
   //     , card_open = card_detected && card.isFileOpen()
   //   #endif
   // ;
+  char progress_buf[8];
+  if (print_job_timer.isRunning())
+    sprintf_P(progress_buf, PSTR("%3u%%"), ui.get_progress_percent());
+  else
+    strcpy_P(progress_buf, PSTR("---"));
 
   START_MENU();
   BACK_ITEM(MSG_INFO_SCREEN);
+
+  STATIC_ITEM_F(F("Print Progress"), SS_DEFAULT, progress_buf);
 
   //
   // Disable Steppers
