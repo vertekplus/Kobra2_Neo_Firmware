@@ -306,13 +306,16 @@ void unified_bed_leveling::G29() {
 
   const uint8_t p_val = parser.byteval('P');
   const bool may_move = p_val == 1 || p_val == 2 || p_val == 4 || parser.seen_test('J');
+  #if HAS_MULTI_HOTEND
+    const uint8_t old_tool_index = active_extruder;
+  #endif
 
   // Check for commands that require the printer to be homed
   if (may_move) {
     planner.synchronize();
     // Send 'N' to force homing before G29 (internal only)
     if (axes_should_home() || parser.seen_test('N')) gcode.home_all_axes();
-    probe.use_probing_tool();
+    TERN_(HAS_MULTI_HOTEND, if (active_extruder != 0) tool_change(0, true));
 
     // Position bed horizontally and Z probe vertically.
     #if HAS_SAFE_BED_LEVELING
@@ -693,7 +696,7 @@ void unified_bed_leveling::G29() {
     UNUSED(probe_deployed);
   #endif
 
-  probe.use_probing_tool(false);
+  TERN_(HAS_MULTI_HOTEND, if (old_tool_index != 0) tool_change(old_tool_index));
   return;
 }
 
