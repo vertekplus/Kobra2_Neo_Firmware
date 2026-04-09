@@ -2479,16 +2479,6 @@
  */
 #define LCD_LANGUAGE en
 #define LCD_LANGUAGE_2 zh_CN
-#define LCD_LANGUAGE_3 de
-#define LCD_LANGUAGE_4 es
-#define LCD_LANGUAGE_5 fr
-#define LCD_LANGUAGE_6 it
-#define LCD_LANGUAGE_7 jp_kana
-#define LCD_LANGUAGE_8 ko_KR
-#define LCD_LANGUAGE_9 ru
-#define LCD_LANGUAGE_10 uk
-#define LCD_LANGUAGE_11 pt
-#define LCD_LANGUAGE_12 pl
 
 /**
  * LCD Character Set
