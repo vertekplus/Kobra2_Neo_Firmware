@@ -285,33 +285,36 @@ void draw_fan_status(uint16_t x, uint16_t y, const bool blink) {
   tft.add_text(tft_string.center(64) + 6, 69 + tft_string.vcenter(FONT_LINE_HEIGHT), COLOR_FAN, tft_string);
 }
 
-void draw_speed_status(uint16_t x, uint16_t y, const bool blink) {
-
+void draw_speed_status(uint16_t x_param, uint16_t y_param, const bool blink) {
+  MarlinImage image = imgIncrease;
+  tft.canvas(x_param, y_param, 135, 100);
   TERN_(TOUCH_SCREEN, touch.clear());
 
   // heaters and fan
-  uint16_t i, x, y = TFT_STATUS_TOP_Y;
+  uint16_t i, x, y; // Declaring internal x and y is fine, but...
+  y = TFT_STATUS_TOP_Y; // ...ensure they don't conflict with parameters
 
-  for (i = 0 ; i < ITEMS_COUNT; i++) {
-    x = (TFT_WIDTH / ITEMS_COUNT - 64) / 2  + (TFT_WIDTH * i / ITEMS_COUNT);
+  for (i = 0; i < ITEMS_COUNT; i++) {
+    x = (TFT_WIDTH / ITEMS_COUNT - 64) / 2 + (TFT_WIDTH * i / ITEMS_COUNT);
     switch (i) {
       #if HAS_EXTRUDERS
-        case ITEM_E0: draw_heater_status(x, y, H_E0); break;
+        // Added 'blink' as the 4th argument (the 'flag' parameter)
+        case ITEM_E0: draw_heater_status(x, y, H_E0, blink); break; 
       #endif
       #if HAS_MULTI_HOTEND
-        case ITEM_E1: draw_heater_status(x, y, H_E1); break;
+        case ITEM_E1: draw_heater_status(x, y, H_E1, blink); break;
       #endif
       #if HOTENDS > 2
-        case ITEM_E2: draw_heater_status(x, y, H_E2); break;
+        case ITEM_E2: draw_heater_status(x, y, H_E2, blink); break;
       #endif
       #if HAS_HEATED_BED
-        case ITEM_BED: draw_heater_status(x, y, H_BED); break;
+        case ITEM_BED: draw_heater_status(x, y, H_BED, blink); break;
       #endif
       #if HAS_TEMP_CHAMBER
-        case ITEM_CHAMBER: draw_heater_status(x, y, H_CHAMBER); break;
+        case ITEM_CHAMBER: draw_heater_status(x, y, H_CHAMBER, blink); break;
       #endif
       #if HAS_TEMP_COOLER
-        case ITEM_COOLER: draw_heater_status(x, y, H_COOLER); break;
+        case ITEM_COOLER: draw_heater_status(x, y, H_COOLER, blink); break;
       #endif
       #if HAS_FAN
         case ITEM_FAN: draw_fan_status(x, y, blink); break;
