@@ -1199,7 +1199,7 @@ volatile bool Temperature::raw_temps_ready = false;
     return MeasurementState::SUCCESS;
   }
 
-  void Temperature::MPC_autotune(const uint8_t e, MPCTuningType tuning_type=AUTO) {
+  void Temperature::MPC_autotune(const uint8_t e, MPCTuningType tuning_type/*=AUTO*/) {
     SERIAL_ECHOLNPGM(STR_MPC_AUTOTUNE_START, e);
 
     MPC_autotuner tuner(e);

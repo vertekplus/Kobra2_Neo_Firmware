@@ -1273,8 +1273,8 @@ class Temperature {
           #endif
       };
 
-      enum MPCTuningType { AUTO, FORCE_ASYMPTOTIC, FORCE_DIFFERENTIAL };
-      static void MPC_autotune(const uint8_t e, MPCTuningType tuning_type);
+      enum MPCTuningType { AUTO, FORCE_DIFFERENTIAL, FORCE_ASYMPTOTIC };
+      static void MPC_autotune(const uint8_t e, MPCTuningType tuning_type = AUTO);
 
     #endif // MPC_AUTOTUNE
 
