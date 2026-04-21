@@ -534,8 +534,6 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
     #define    REV_E_DIR(E)   do{ E0_DIR_WRITE(INVERT_DIR(E0, (E) ? HIGH : LOW )); }while(0)
   #endif
 
-  #define TOOL_ESTEPPER(T) ((T) >> 1)
-
 #elif HAS_PRUSA_MMU2  // One multiplexed stepper driver
 
   #define E_STEP_WRITE(E,V) E0_STEP_WRITE(V)
@@ -687,10 +685,6 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
   #define   NORM_E_DIR(E)   NOOP
   #define    REV_E_DIR(E)   NOOP
 
-#endif
-
-#ifndef TOOL_ESTEPPER
-  #define TOOL_ESTEPPER(T) (T)
 #endif
 
 //
